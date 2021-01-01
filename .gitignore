@@ -1,0 +1,5 @@
+## Miscellaneous
+*.pdf
+
+## Visual Studio Code
+.vscode/
