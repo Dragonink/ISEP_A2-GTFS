@@ -1,6 +1,7 @@
 from typing import Dict, List, Set, Tuple
 from math import sqrt
 from graph import Graph
+from pathfinding import *
 
 Position = Tuple[float, float]
 
@@ -43,7 +44,7 @@ def import_stops(file: str) -> Dict[str, Stop]:
 	- `file` - Path to the file
 
 	# Return value
-	Dictionnary that maps stops by their IDs
+	Dictionnary `stop.id => stop`
 	"""
 	stops: Dict[str, Stop] = dict()
 	with open(file, "rt") as data:
@@ -84,3 +85,6 @@ if __name__ == "__main__":
 	for trip in edges:
 		for (i,stop) in enumerate(trip[:-1]):
 			GRAPH.add_edge(stop, trip[i + 1])
+	# Construct pathfinders
+	BFS = Pathfinder(GRAPH, bfs)
+	DJIKSTRA = Pathfinder(GRAPH, djikstra)
