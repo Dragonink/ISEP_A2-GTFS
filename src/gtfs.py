@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 from numpy import pi
 
 Position = Tuple[float, float]
@@ -41,5 +41,17 @@ def import_stops(file: str) -> Dict[str, Stop]:
 			stops[stop.id] = stop
 	return stops
 
-# https://stackoverflow.com/questions/13407468/how-can-i-list-all-the-stops-associated-with-a-route-using-gtfs
-#TODO use stop_times.txt
+def import_edges(file: str) -> Dict[str, List[str]]:
+	edges: Dict[str, Dict[int, str]] = dict()
+	# Import raw data
+	with open(file, "rt") as data:
+		lines = data.readlines()[1:]
+		for line in lines:
+			cols = line.split(",")
+			if cols[0] not in edges:
+				edges[cols[0]] = dict()
+			edges[cols[0]][int(cols[4])] = cols[3]
+	# Transform data into a sequence of stop IDs
+	for (trip, stops) in edges.items():
+		edges[trip] = [stops[seq] for seq in sorted(stops)]
+	return edges
