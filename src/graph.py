@@ -1,22 +1,24 @@
-from typing import Dict, Generic, Iterable, Iterator, List, Set, Tuple, TypeVar
+from typing import Callable, Dict, Generic, Iterable, Iterator, List, Set, Tuple, TypeVar
 
 T = TypeVar("T")
-Adjacency = Tuple[str, str]
+Adjacency = Tuple[str, str, float]
 class Graph(Generic[T]):
-	"""Graph (unweighted directed) representation
+	"""Graph (weighted directed) representation
 
 	# Generic
 	- `T` - Type of the nodes
 
-	# Fields
-	- `nodes` - Set of nodes
-	- `adjacency` - Adjacency list: set of tuples `(u,v)` which represent `u->v`
+	# Properties
+	- `nodes` - Dictionnary `id => node`
+	- `adjacency` - Adjacency list: set of tuples `(u,v,weight)` which represent `u-(weight)->v`
+	- `compute_weight` - Function to compute edge weight from two nodes
 	"""
-	def __init__(self, nodes: Iterable[T]):
+	def __init__(self, nodes: Iterable[T], compute_weight: Callable[[T, T], float] = None):
 		self.__nodes: Dict[str, T] = dict()
 		for node in nodes:
 			self.add_node(node)
 		self.__adjacency: Set[Adjacency] = set()
+		self.__compute_weight = compute_weight
 	def __repr__(self) -> str:
 		return repr(self.__adjacency)
 	def __iter__(self) -> Iterator[Tuple[str, T]]:
@@ -31,16 +33,6 @@ class Graph(Generic[T]):
 	def size(self) -> int:
 		return len(self.__adjacency)
 
-	def has_node(self, v: str) -> bool:
-		"""Check if a node key exists
-
-		# Arguments
-		- `v` - Key of the node
-
-		# Return value
-		`True` if the node exists; `False` otherwise
-		"""
-		return v in self.__nodes
 	def add_node(self, node: T) -> str:
 		"""Add a node to the graph
 
@@ -60,7 +52,10 @@ class Graph(Generic[T]):
 		else:
 			raise RuntimeError("{0} already exists as a node key".format(key))
 	def add_edge(self, u: str, v: str):
-		"""Add an edge `u->v` to the graph
+		"""Add an edge `u-(weight)->v` to the graph
+
+		Will compute the weight using the `compute_weight` property.
+		If `compute_weight` is `None`, the weight will be 0.
 
 		# Arguments
 		- `u` - Key of the first node
@@ -71,37 +66,38 @@ class Graph(Generic[T]):
 		"""
 		if u == v:
 			raise ValueError("u={0} and v={0} are equal".format(u, v))
-		elif not self.has_node(u):
+		elif u not in self.__nodes:
 			raise ValueError("u={0} does not refer to a node".format(u))
-		elif not self.has_node(v):
+		elif v not in self.__nodes:
 			raise ValueError("v={0} does not refer to a node".format(v))
 		else:
-			self.__adjacency.add((u,v))
-	def neighbors_out(self, v: str) -> List[str]:
+			weight = float(0) if self.__compute_weight is None else self.__compute_weight(self.__nodes[u], self.__nodes[v])
+			self.__adjacency.add((u,v,weight))
+	def neighbors_out(self, v: str) -> List[Tuple[str, float]]:
 		"""Get the outward neighbors of a node
 
 		# Arguments
 		- `v` - Key of the node
 
 		# Return value
-		List of the keys of nodes that can be accessed from `v`
+		List of the keys of nodes that can be accessed from `v`, and the weights of the edges
 		"""
-		neighbors: List[str] = []
-		for (u, w) in self.__adjacency:
+		neighbors: List[Tuple[str, float]] = []
+		for (u, w, weight) in self.__adjacency:
 			if u == v and u != w and w not in neighbors:
-				neighbors.append(w)
+				neighbors.append((w, weight))
 		return neighbors
-	def neighbors_in(self, v: int) -> List[str]:
+	def neighbors_in(self, v: int) -> List[Tuple[str, float]]:
 		"""Get the inward neighbors of a node
 
 		# Arguments
 		- `v` - Key of the node
 
 		# Return value
-		List of the keys of nodes that can access `v`
+		List of the keys of nodes that can access `v`, and the weights of the edges
 		"""
-		neighbors: List[str] = []
-		for (u, w) in self.__adjacency:
+		neighbors: List[Tuple[str, float]] = []
+		for (u, w, weight) in self.__adjacency:
 			if w == v and u != w and u not in neighbors:
-				neighbors.append(u)
+				neighbors.append((u, weight))
 		return neighbors

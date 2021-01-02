@@ -1,25 +1,19 @@
 from typing import Dict, List, Set, Tuple
-from numpy import pi
+from math import sqrt
 from graph import Graph
 
 Position = Tuple[float, float]
 
-EARTH_CIRCUMFERENCE: float = 2 * pi * 6.371e3
-# Phoenix is located at 33.448377° N, 112.074037° W
-PHOENIX_POS: Position = (33.448377, -112.074037)
-
 class Stop:
 	"""Stop representation
 
-	# Fields
+	# Properties
 	- `id` - Unique identifier
 	- `position` - Cartesian position of the stop, with `PHOENIX_POS` as origin
 	"""
 	def __init__(self, id: str, lat: float, lon: float):
 		self.__id: str = id
-		# Convert (lat,lon) to (x,y) with PHOENIX_POS as origin
-		rlat, rlon = (lat - PHOENIX_POS[0]) / 360, (lon - PHOENIX_POS[1]) / 360
-		self.__position: Position = (rlon * EARTH_CIRCUMFERENCE, rlat * EARTH_CIRCUMFERENCE)
+		self.__position: Position = (lat, lon)
 	def from_csv(line: str) -> 'Stop':
 		"""Construct a Stop instance from CSV data
 
@@ -86,7 +80,7 @@ if __name__ == "__main__":
 	stops = import_stops("data/stops.txt")
 	edges = import_edges("data/stop_times.txt")
 	# Construct graph
-	GRAPH = Graph(stops.values())
+	GRAPH = Graph(stops.values(), compute_weight=lambda u,v: sqrt((v.position[0] - u.position[0]) ** 2 + (v.position[1] - u.position[1]) ** 2))
 	for trip in edges:
 		for (i,stop) in enumerate(trip[:-1]):
 			GRAPH.add_edge(stop, trip[i + 1])
