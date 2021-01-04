@@ -80,8 +80,8 @@ def bfs(self: Pathfinder, v: str):
 					self._previous[v][u] = current
 					self._distance[v][u] = self._distance[v][current] + 1
 					queue.append(u)
-def djikstra(self: Pathfinder, v: str):
-	"""Djikstra method for `Pathfinder`"""
+def dijkstra(self: Pathfinder, v: str):
+	"""Dijkstra method for `Pathfinder`"""
 	if v not in self._previous:
 		self._previous[v] = dict()
 		self._distance[v] = dict()

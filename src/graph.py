@@ -73,31 +73,41 @@ class Graph(Generic[T]):
 		else:
 			weight = float(0) if self.__compute_weight is None else self.__compute_weight(self.__nodes[u], self.__nodes[v])
 			self.__adjacency.add((u,v,weight))
-	def neighbors_out(self, v: str) -> List[Tuple[str, float]]:
+	def neighbors_out(self, v: str) -> Set[Tuple[str, float]]:
 		"""Get the outward neighbors of a node
 
 		# Arguments
 		- `v` - Key of the node
 
 		# Return value
-		List of the keys of nodes that can be accessed from `v`, and the weights of the edges
+		Set of the keys of nodes that can be accessed from `v`, and the weights of the edges
 		"""
-		neighbors: List[Tuple[str, float]] = []
+		neighbors: Set[Tuple[str, float]] = set()
 		for (u, w, weight) in self.__adjacency:
 			if u == v and u != w and w not in neighbors:
-				neighbors.append((w, weight))
+				neighbors.add((w, weight))
 		return neighbors
-	def neighbors_in(self, v: int) -> List[Tuple[str, float]]:
+	def neighbors_in(self, v: int) -> Set[Tuple[str, float]]:
 		"""Get the inward neighbors of a node
 
 		# Arguments
 		- `v` - Key of the node
 
 		# Return value
-		List of the keys of nodes that can access `v`, and the weights of the edges
+		Set of the keys of nodes that can access `v`, and the weights of the edges
 		"""
-		neighbors: List[Tuple[str, float]] = []
+		neighbors: Set[Tuple[str, float]] = set()
 		for (u, w, weight) in self.__adjacency:
 			if w == v and u != w and u not in neighbors:
-				neighbors.append((u, weight))
+				neighbors.add((u, weight))
 		return neighbors
+	def neighbors(self, v: int) -> Set[Tuple[str, float]]:
+		"""Get all neighbors of a node
+
+		# Arguments
+		- `v` - Key of the node
+
+		# Return value
+		Set of the keys of neighbors of `v`, and the weights of the edges
+		"""
+		return self.neighbors_in(v).union(self.neighbors_out(v))

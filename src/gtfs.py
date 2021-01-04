@@ -10,7 +10,7 @@ class Stop:
 
 	# Properties
 	- `id` - Unique identifier
-	- `position` - Cartesian position of the stop, with `PHOENIX_POS` as origin
+	- `position` - Position of the stop
 	"""
 	def __init__(self, id: str, lat: float, lon: float):
 		self.__id: str = id
@@ -53,7 +53,7 @@ def import_stops(file: str) -> Dict[str, Stop]:
 			stops[stop.id] = stop
 	return stops
 
-def import_edges(file: str) -> Set[tuple]:
+def import_edges(file: str) -> Set[Tuple[str, str]]:
 	"""Import edges from GTFS `stop_times.txt`
 
 	# Arguments
@@ -71,9 +71,11 @@ def import_edges(file: str) -> Set[tuple]:
 				trips[cols[0]] = dict()
 			trips[cols[0]][int(cols[4])] = cols[3]
 	# Transform data
-	edges: Set[List[str]] = set()
-	for stops in trips.values():
-		edges.add(tuple([stops[seq] for seq in sorted(stops)]))
+	edges: Set[Tuple[str, str]] = set()
+	for trip in trips.values():
+		stop_seq = sorted(trip)
+		for (i,stop) in enumerate(stop_seq[:-1]):
+			edges.add((trip[stop], trip[stop_seq[i + 1]]))
 	return edges
 
 if __name__ == "__main__":
@@ -82,9 +84,8 @@ if __name__ == "__main__":
 	edges = import_edges("data/stop_times.txt")
 	# Construct graph
 	GRAPH = Graph(stops.values(), compute_weight=lambda u,v: sqrt((v.position[0] - u.position[0]) ** 2 + (v.position[1] - u.position[1]) ** 2))
-	for trip in edges:
-		for (i,stop) in enumerate(trip[:-1]):
-			GRAPH.add_edge(stop, trip[i + 1])
+	for edge in edges:
+		GRAPH.add_edge(edge[0], edge[1])
 	# Construct pathfinders
 	BFS = Pathfinder(GRAPH, bfs)
-	DJIKSTRA = Pathfinder(GRAPH, djikstra)
+	DIJKSTRA = Pathfinder(GRAPH, dijkstra)
