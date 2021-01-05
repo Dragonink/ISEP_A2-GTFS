@@ -1,7 +1,8 @@
-from typing import Callable, Dict, Generic, Iterable, Iterator, List, Set, Tuple, TypeVar
+from typing import Callable, Dict, Generic, Iterable, Iterator, Set, Tuple, TypeVar
 
 T = TypeVar("T")
 Adjacency = Tuple[str, str, float]
+
 class Graph(Generic[T]):
 	"""Graph (weighted directed) representation
 
@@ -13,25 +14,31 @@ class Graph(Generic[T]):
 	- `adjacency` - Adjacency list: set of tuples `(u,v,weight)` which represent `u-(weight)->v`
 	- `compute_weight` - Function to compute edge weight from two nodes
 	"""
+
 	def __init__(self, nodes: Iterable[T], compute_weight: Callable[[T, T], float] = None):
 		self.__nodes: Dict[str, T] = dict()
 		for node in nodes:
 			self.add_node(node)
 		self.__adjacency: Set[Adjacency] = set()
 		self.__compute_weight = compute_weight
+
 	def __repr__(self) -> str:
 		return repr(self.__adjacency)
+
 	def __iter__(self) -> Iterator[Tuple[str, T]]:
 		return iter(self.__nodes.items())
+
 	def __getitem__(self, key: str) -> T:
 		return self.__nodes[key]
 
 	@property
 	def order(self) -> int:
 		return len(self.__nodes)
+
 	@property
 	def size(self) -> int:
 		return len(self.__adjacency)
+
 
 	def add_node(self, node: T) -> str:
 		"""Add a node to the graph
@@ -51,6 +58,8 @@ class Graph(Generic[T]):
 			return key
 		else:
 			raise RuntimeError("{0} already exists as a node key".format(key))
+
+
 	def add_edge(self, u: str, v: str):
 		"""Add an edge `u-(weight)->v` to the graph
 
@@ -73,6 +82,8 @@ class Graph(Generic[T]):
 		else:
 			weight = float(0) if self.__compute_weight is None else self.__compute_weight(self.__nodes[u], self.__nodes[v])
 			self.__adjacency.add((u,v,weight))
+
+
 	def neighbors_out(self, v: str) -> Set[Tuple[str, float]]:
 		"""Get the outward neighbors of a node
 
@@ -87,6 +98,8 @@ class Graph(Generic[T]):
 			if u == v and u != w and w not in neighbors:
 				neighbors.add((w, weight))
 		return neighbors
+
+
 	def neighbors_in(self, v: int) -> Set[Tuple[str, float]]:
 		"""Get the inward neighbors of a node
 
@@ -101,6 +114,8 @@ class Graph(Generic[T]):
 			if w == v and u != w and u not in neighbors:
 				neighbors.add((u, weight))
 		return neighbors
+
+
 	def neighbors(self, v: int) -> Set[Tuple[str, float]]:
 		"""Get all neighbors of a node
 
