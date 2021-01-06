@@ -2,6 +2,9 @@
 __pycache__/
 ## Miscellaneous
 *.pdf
+!docs/*.pdf
 
 ## Visual Studio Code
 .vscode/
+## PyCharm
+.idea/

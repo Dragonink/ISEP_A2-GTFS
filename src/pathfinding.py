@@ -2,6 +2,7 @@ from typing import Callable, Dict, List, Set
 from math import inf
 from graph import Graph
 
+
 class Pathfinder:
 	"""Wrapping class to allow pathfinding in graphs
 
@@ -11,6 +12,7 @@ class Pathfinder:
 	- `distance` - Dictionnary `from => to => distance`
 	- `method` - Function to compute shortest paths from a node
 	"""
+
 	def __init__(self, graph: Graph, method: Callable[['Pathfinder', str], None]):
 		self.graph = graph
 		self._previous: Dict[str, Dict[str, str]] = dict()
@@ -30,7 +32,8 @@ class Pathfinder:
 		if u not in self._previous:
 			self.__method(self, u)
 		return v in self._previous[u]
-	def get_path(self, u: str, v: str) -> List[str]:
+
+	def get_path(self, u: str, v: str):
 		"""Get the shortest path between two nodes
 
 		# Arguments
@@ -52,7 +55,8 @@ class Pathfinder:
 			current = next
 		path.reverse()
 		return path
-	def get_distance(self, u: str, v: str) -> int:
+
+	def get_distance(self, u: str, v: str) -> float:
 		"""Get the distance between two nodes
 
 		# Arguments
@@ -66,6 +70,7 @@ class Pathfinder:
 			self.__method(self, u)
 		return self._distance[u][v] if v in self._distance[u] else inf
 
+
 def bfs(self: Pathfinder, v: str):
 	"""Breadth-First Search method for `Pathfinder`"""
 	if v not in self._previous:
@@ -75,11 +80,13 @@ def bfs(self: Pathfinder, v: str):
 		queue = [v]
 		while len(queue) > 0:
 			current = queue.pop(0)
-			for (u,_) in self.graph.neighbors_out(current):
+			for (u, _) in self.graph.neighbors_out(current):
 				if u not in self._previous[v]:
 					self._previous[v][u] = current
 					self._distance[v][u] = self._distance[v][current] + 1
 					queue.append(u)
+
+
 def dijkstra(self: Pathfinder, v: str):
 	"""Dijkstra method for `Pathfinder`"""
 	if v not in self._previous:
@@ -91,10 +98,10 @@ def dijkstra(self: Pathfinder, v: str):
 		while len(queue) > 0:
 			current = queue.pop(0)
 			marked.add(current)
-			for (u,weight) in self.graph.neighbors_out(current):
+			for (u, weight) in self.graph.neighbors_out(current):
 				tentative_distance = self._distance[v][current] + weight
 				if u not in self._distance[v] or tentative_distance < self._distance[v][u]:
 					self._previous[v][u] = current
 					self._distance[v][u] = tentative_distance
-				if not u in marked:
+				if u not in marked:
 					queue.append(u)
