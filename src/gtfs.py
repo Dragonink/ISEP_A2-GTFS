@@ -8,22 +8,20 @@ from timing import timing
 from pathfinding import *
 from clustering import clustering
 
-
 Position = Tuple[float, float]
+
 
 class Stop:
 	"""Stop representation
 
-    # Properties
-    - `id` - Unique identifier
-    - `position` - Position of the stop
-    """
-
+	# Properties
+	- `id` - Unique identifier
+	- `position` - Position of the stop
+	"""
 
 	def __init__(self, id: str, lat: float, lon: float):
 		self.__id: str = id
 		self.__position: Position = (lat, lon)
-
 
 	def from_csv(line: str) -> 'Stop':
 		"""Construct a Stop instance from CSV data
@@ -55,11 +53,12 @@ class Stop:
 def import_stops(file: str) -> Tuple[List[Stop], Dict[str, int]]:
 	"""Import stops from GTFS `stops.txt`
 
-    # Arguments
-    - `file` - Path to the file
+	# Arguments
+	- `file` - Path to the file
 
 	# Return value
-	Tuple `(stops, id_map)` where `stops` is a list of `Stop` instances, and `id_map` is a dictionnary `stop.id => node_id` where `node_id` is the index of the node in `stops`
+	Tuple `(stops, id_map)` where `stops` is a list of `Stop` instances,
+	and `id_map` is a dictionnary `stop.id => node_id` where `node_id` is the index of the node in `stops`
 	"""
 	stops: List[Stop] = []
 	id_map: Dict[str, int] = dict()
@@ -68,14 +67,14 @@ def import_stops(file: str) -> Tuple[List[Stop], Dict[str, int]]:
 			stop = Stop.from_csv(line)
 			stops.append(stop)
 			id_map[stop.id] = i
-	return (stops, id_map)
+	return stops, id_map
 
 
 def import_edges(file: str) -> Set[Tuple[str, str]]:
 	"""Import edges from GTFS `stop_times.txt`
 
-    # Arguments
-    - `file` - Path to the file
+	# Arguments
+	- `file` - Path to the file
 	# Return value
 	Set of ordered tuples of stop IDs
 	"""
@@ -98,6 +97,7 @@ def import_edges(file: str) -> Set[Tuple[str, str]]:
 
 if __name__ == "__main__":
 	DATAPATH = argv[1] if len(argv) > 1 else getcwd()
+	DATAPATH = DATAPATH[:DATAPATH.find("ISEP_A2-GTFS")+12] + "/data/"
 	# Import data
 	((stops, id_map), exetime) = timing(import_stops)(join(DATAPATH, "stops.txt"))
 	print("Imported {0} stops in {1}ms".format(len(stops), exetime * 1e3))
@@ -116,5 +116,5 @@ if __name__ == "__main__":
 	BFS = Pathfinder(GRAPH, bfs)
 	DIJKSTRA = Pathfinder(GRAPH, dijkstra)
 
-	# Detect clustering
-	# clustering(DIJKSTRA, stops.keys(), 5)
+	# Create clustering
+	clustering(DIJKSTRA, set(id_map.values()), 5)

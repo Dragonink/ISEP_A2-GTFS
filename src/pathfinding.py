@@ -6,13 +6,13 @@ from graph import Graph
 class Pathfinder:
 	"""Wrapping class to allow pathfinding in graphs
 
-    # Properties
-    - `graph` - Graph used to compute pathfinding
-    - `previous` - Dictionnary `from => to => previous` where `previous` is the previous node of `to` when searching
-                   from `from`
-    - `distance` - Dictionnary `from => to => distance`
-    - `method` - Function to compute shortest paths from a node
-    """
+	# Properties
+	- `graph` - Graph used to compute pathfinding
+	- `previous` - Dictionnary `from => to => previous` where `previous` is the previous node of `to` when searching
+					from `from`
+	- `distance` - Dictionnary `from => to => distance`
+	- `method` - Function to compute shortest paths from a node
+	"""
 
 	def __init__(self, graph: Graph, method: Callable[['Pathfinder', int], None]):
 		self.graph = graph
@@ -23,9 +23,9 @@ class Pathfinder:
 	def has_path(self, u: int, v: int) -> bool:
 		"""Check if a path exist between two nodes
 
-        # Arguments
-        - `start` - Key of the starting node
-        - `end` - Key of the ending node
+		# Arguments
+		- `start` - Key of the starting node
+		- `end` - Key of the ending node
 
 		# Return value
 		`True` if a path exists; `False` otherwise
@@ -35,9 +35,9 @@ class Pathfinder:
 	def get_path(self, u: int, v: int):
 		"""Get the shortest path between two nodes
 
-        # Arguments
-        - `start` - Key of the starting node
-        - `end` - Key of the ending node
+		# Arguments
+		- `u` - Key of the starting node
+		- `v` - Key of the ending node
 
 		# Return value
 		Ordered list of node keys; or `None` if a path does not exist
@@ -59,9 +59,9 @@ class Pathfinder:
 	def get_distance(self, u: int, v: int) -> float:
 		"""Get the distance between two nodes
 
-        # Arguments
-        - `start` - Key of the starting node
-        - `end` - Key of the ending node
+		# Arguments
+		- `start` - Key of the starting node
+		- `end` - Key of the ending node
 
 		# Return value
 		Distance from `u` to `v`, in edges
@@ -89,6 +89,7 @@ def bfs(self: Pathfinder, v: int):
 
 def dijkstra(self: Pathfinder, v: int):
 	"""Dijkstra method for `Pathfinder`"""
+
 	if v not in self._previous:
 		self._previous[v] = dict()
 		self._distance[v] = dict()
@@ -98,7 +99,7 @@ def dijkstra(self: Pathfinder, v: int):
 		while len(queue) > 0:
 			current = queue.pop(0)
 			marked.add(current)
-			for (u, weight) in self.graph.neighbors_out(current):
+			for (u, weight) in self.graph.get_node(current).neighbors_out:
 				tentative_distance = self._distance[v][current] + weight
 				if u not in self._distance[v] or tentative_distance < self._distance[v][u]:
 					self._previous[v][u] = current

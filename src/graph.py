@@ -1,8 +1,8 @@
 from typing import Callable, Generic, Iterable, Iterator, List, Set, Tuple, TypeVar
 
-
 T = TypeVar("T")
 Adjacency = Tuple[int, float]
+
 
 class Node(Generic[T]):
 	"""Graph node representation
@@ -16,19 +16,25 @@ class Node(Generic[T]):
 	- `neighbors_in` - Inward neighbors of the node
 	"""
 
+
 	def __init__(self, value: T):
 		self.__value = value
 		self.__neighbors_out: Set[Adjacency] = set()
 		self.__neighbors_in: Set[Adjacency] = set()
 
+
 	def __repr__(self) -> str:
 		return repr(self.__value)
 
+
 	def __eq__(self, other: 'Node') -> bool:
-		return self.value == other.value and self.neighbors_out == other.neighbors_out and self.neighbors_in == other.neighbors_in
+		return self.value == other.value \
+			and self.neighbors_out == other.neighbors_out \
+			and self.neighbors_in == other.neighbors_in
 
 	def __hash__(self) -> int:
 		return hash((self.__value, frozenset(self.__neighbors_out), frozenset(self.__neighbors_in)))
+
 
 	@property
 	def value(self) -> T:
@@ -38,9 +44,14 @@ class Node(Generic[T]):
 	def neighbors_out(self) -> Set[Adjacency]:
 		return self.__neighbors_out
 
+	"""
+	Ne devrait pas être utilisée, j'update neighbors_out pour détruire des edges mais pas neighbors_in,
+	l'utiliser peut donc générer des erreurs
+	"""
 	@property
 	def neighbors_in(self) -> Set[Adjacency]:
 		return self.__neighbors_in
+
 
 class Graph(Generic[T]):
 	"""Graph (weighted directed) representation
@@ -86,6 +97,11 @@ class Graph(Generic[T]):
 		self.__nodes.append(Node(node))
 		return len(self.__nodes) - 1
 
+
+	def get_node(self, node: int) -> Node:
+		return self.__nodes[node]
+
+
 	def add_edge(self, u: int, v: int):
 		"""Add an edge `u-(weight)->v` to the graph
 
@@ -102,7 +118,8 @@ class Graph(Generic[T]):
 		if u == v:
 			raise ValueError("u={0} and v={0} are equal".format(u, v))
 		else:
-			weight = float(0) if self.__compute_weight is None else self.__compute_weight(self.__nodes[u].value, self.__nodes[v].value)
+			weight = float(0) if self.__compute_weight is None \
+				else self.__compute_weight(self.__nodes[u].value, self.__nodes[v].value)
 			self.__nodes[u].neighbors_out.add((v, weight))
 			self.__nodes[v].neighbors_in.add((u, weight))
 			self.__size += 1
