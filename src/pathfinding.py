@@ -6,12 +6,13 @@ from graph import Graph
 class Pathfinder:
     """Wrapping class to allow pathfinding in graphs
 
-	# Properties
-	- `graph` - Graph used to compute pathfinding
-	- `previous` - Dictionnary `from => to => previous` where `previous` is the previous node of `to` when searching from `from`
-	- `distance` - Dictionnary `from => to => distance`
-	- `method` - Function to compute shortest paths from a node
-	"""
+    # Properties
+    - `graph` - Graph used to compute pathfinding
+    - `previous` - Dictionnary `from => to => previous` where `previous` is the previous node of `to` when searching
+                   from `from`
+    - `distance` - Dictionnary `from => to => distance`
+    - `method` - Function to compute shortest paths from a node
+    """
 
     def __init__(self, graph: Graph, method: Callable[['Pathfinder', str], None]):
         self.graph = graph
@@ -19,55 +20,62 @@ class Pathfinder:
         self._distance: Dict[str, Dict[str, float]] = dict()
         self.__method = method
 
+
     def has_path(self, u: str, v: str) -> bool:
         """Check if a path exist between two nodes
 
-		# Arguments
-		- `u` - Key of the starting node
-		- `v` - Key of the ending node
+        # Arguments
+        - `start` - Key of the starting node
+        - `end` - Key of the ending node
 
-		# Return value
-		`True` if a path exists; `False` otherwise
-		"""
+        # Return value
+        `True` if a path exists; `False` otherwise
+        """
         if u not in self._previous:
             self.__method(self, u)
         return v in self._previous[u]
 
-    def get_path(self, u: str, v: str):
+
+    def get_path(self, start: str, end: str):
         """Get the shortest path between two nodes
 
-		# Arguments
-		- `u` - Key of the starting node
-		- `v` - Key of the ending node
+        # Arguments
+        - `start` - Key of the starting node
+        - `end` - Key of the ending node
 
-		# Return value
-		Ordered list of node keys; or `None` if a path does not exist
-		"""
-        if u not in self._previous:
-            self.__method(self, u)
-        if not self.has_path(u, v):
+        # Return value
+        Ordered list of node keys; or `None` if a path does not exist
+        """
+        if start not in self._previous:
+            self.__method(self, start)
+
+        if not self.has_path(start, end):
             return None
-        path: List[str] = [v]
-        current = v
-        while current != u:
-            next = self._previous[u][current]
+
+        path: List[str] = [end]
+        current = end
+
+        while current != start:
+            next = self._previous[start][current]
             path.append(next)
             current = next
         path.reverse()
         return path
 
+
     def get_distance(self, u: str, v: str) -> float:
         """Get the distance between two nodes
 
-		# Arguments
-		- `u` - Key of the starting node
-		- `v` - Key of the ending node
+        # Arguments
+        - `start` - Key of the starting node
+        - `end` - Key of the ending node
 
-		# Return value
-		Distance from `u` to `v`, in edges
-		"""
+        # Return value
+        Distance from `start` to `end`, in edges
+        """
         if u not in self._previous:
             self.__method(self, u)
+
         return self._distance[u][v] if v in self._distance[u] else inf
 
 
@@ -89,6 +97,7 @@ def bfs(self: Pathfinder, v: str):
 
 def dijkstra(self: Pathfinder, v: str):
     """Dijkstra method for `Pathfinder`"""
+    print("Dijkstra on", v)
     if v not in self._previous:
         self._previous[v] = dict()
         self._distance[v] = dict()

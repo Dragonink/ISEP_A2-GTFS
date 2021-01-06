@@ -9,36 +9,43 @@ Position = Tuple[float, float]
 class Stop:
     """Stop representation
 
-	# Properties
-	- `id` - Unique identifier
-	- `position` - Position of the stop
-	"""
+    # Properties
+    - `id` - Unique identifier
+    - `position` - Position of the stop
+    """
+
 
     def __init__(self, id: str, lat: float, lon: float):
         self.__id: str = id
         self.__position: Position = (lat, lon)
 
+
     def from_csv(line: str) -> 'Stop':
         """Construct a Stop instance from CSV data
 
-		# Arguments
-		- `line` - CSV line containing data of the stop
-		"""
+        # Arguments
+        - `line` - CSV line containing data of the stop
+        """
         data = line.split(",")
         return Stop(data[0], float(data[4]), float(data[5]))
+
 
     def __repr__(self) -> str:
         return "{0}: {1}".format(self.__id, self.__position)
 
+
     def __eq__(self, other: 'Stop') -> bool:
         return self.id == other.id and self.position == other.position
+
 
     def __hash__(self) -> int:
         return hash((self.__id, self.__position))
 
+
     @property
     def id(self) -> str:
         return self.__id
+
 
     @property
     def position(self) -> Position:
@@ -48,12 +55,12 @@ class Stop:
 def import_stops(file: str) -> Dict[str, Stop]:
     """Import stops from GTFS `stops.txt`
 
-	# Arguments
-	- `file` - Path to the file
+    # Arguments
+    - `file` - Path to the file
 
-	# Return value
-	Dictionnary `stop.id => stop`
-	"""
+    # Return value
+    Dictionnary `stop.id => stop`
+    """
     stops: Dict[str, Stop] = dict()
     with open(file, "rt") as data:
         for line in data.readlines()[1:]:
@@ -65,12 +72,12 @@ def import_stops(file: str) -> Dict[str, Stop]:
 def import_edges(file: str) -> Set[Tuple[str, str]]:
     """Import edges from GTFS `stop_times.txt`
 
-	# Arguments
-	- `file` - Path to the file
+    # Arguments
+    - `file` - Path to the file
 
-	# Return value
-	Set of ordered tuples of stop IDs
-	"""
+    # Return value
+    Set of ordered tuples of stop IDs
+    """
     trips: Dict[str, Dict[int, str]] = dict()
     # Import raw data
     with open(file, "rt") as data:
@@ -108,4 +115,4 @@ if __name__ == "__main__":
 
     # 4 : Detect clustering
     #print(edges)
-    clustering(DIJKSTRA, stops.keys(), 5)
+    clustering(DIJKSTRA, set(stops.keys()), 5)
