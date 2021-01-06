@@ -33,7 +33,7 @@ class Stop:
 		return Stop(data[0], float(data[4]), float(data[5]))
 
 	def __repr__(self) -> str:
-		return "{0}: {1}".format(self.__id, self.__position)
+		return "{0} {1}".format(self.__id, self.__position)
 
 	def __eq__(self, other: 'Stop') -> bool:
 		return self.id == other.id and self.position == other.position
@@ -50,21 +50,23 @@ class Stop:
 		return self.__position
 
 
-def import_stops(file: str) -> Dict[str, Stop]:
+def import_stops(file: str) -> Tuple[List[Stop], Dict[str, int]]:
 	"""Import stops from GTFS `stops.txt`
 
 	# Arguments
 	- `file` - Path to the file
 
 	# Return value
-	Dictionnary `stop.id => stop`
+	Tuple `(stops, id_map)` where `stops` is a list of `Stop` instances, and `id_map` is a dictionnary `stop.id => node_id` where `node_id` is the index of the node in `stops`
 	"""
-	stops: Dict[str, Stop] = dict()
+	stops: List[Stop] = []
+	id_map: Dict[str, int] = dict()
 	with open(file, "rt") as data:
-		for line in data.readlines()[1:]:
+		for (i, line) in enumerate(data.readlines()[1:]):
 			stop = Stop.from_csv(line)
-			stops[stop.id] = stop
-	return stops
+			stops.append(stop)
+			id_map[stop.id] = i
+	return (stops, id_map)
 
 def import_edges(file: str) -> Set[Tuple[str, str]]:
 	"""Import edges from GTFS `stop_times.txt`
@@ -95,17 +97,17 @@ def import_edges(file: str) -> Set[Tuple[str, str]]:
 if __name__ == "__main__":
 	DATAPATH = argv[1] if len(argv) > 1 else getcwd()
 	# Import data
-	(stops, exetime) = timing(import_stops)(join(DATAPATH, "stops.txt"))
+	((stops, id_map), exetime) = timing(import_stops)(join(DATAPATH, "stops.txt"))
 	print("Imported {0} stops in {1}ms".format(len(stops), exetime * 1e3))
 	(edges, exetime) = timing(import_edges)(join(DATAPATH, "stop_times.txt"))
 	print("Imported {0} edges in {1}ms".format(len(edges), exetime * 1e3))
 
 	# Construct graph
 	exetime = perf_counter()
-	GRAPH = Graph(stops.values(), compute_weight=lambda u, v: sqrt(
+	GRAPH = Graph(stops, compute_weight=lambda u, v: sqrt(
 		(v.position[0] - u.position[0]) ** 2 + (v.position[1] - u.position[1]) ** 2))
 	for edge in edges:
-		GRAPH.add_edge(edge[0], edge[1])
+		GRAPH.add_edge(id_map[edge[0]], id_map[edge[1]])
 	print("Constructed graph in {0}ms".format((perf_counter() - exetime) * 1e3))
 
 	# Construct pathfinders
