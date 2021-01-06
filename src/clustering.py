@@ -1,4 +1,4 @@
-from src.pathfinding import Pathfinder
+from pathfinding import Pathfinder
 
 
 def clustering(DIJKSTRA: Pathfinder, nodes, n):

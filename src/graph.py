@@ -1,7 +1,46 @@
-from typing import Callable, Dict, Generic, Iterable, Iterator, Set, Tuple, TypeVar
+from typing import Callable, Generic, Iterable, Iterator, List, Set, Tuple, TypeVar
+
 
 T = TypeVar("T")
-Adjacency = Tuple[str, str, float]
+Adjacency = Tuple[int, float]
+
+class Node(Generic[T]):
+	"""Graph node representation
+
+	# Generic
+	- `T` - Type of the node value
+
+	# Properties
+	- `value` - Value of the node
+	- `neighbors_out` - Outward neighbors of the node
+	- `neighbors_in` - Inward neighbors of the node
+	"""
+
+	def __init__(self, value: T):
+		self.__value = value
+		self.__neighbors_out: Set[Adjacency] = set()
+		self.__neighbors_in: Set[Adjacency] = set()
+
+	def __repr__(self) -> str:
+		return repr(self.__value)
+
+	def __eq__(self, other: 'Node') -> bool:
+		return self.value == other.value and self.neighbors_out == other.neighbors_out and self.neighbors_in == other.neighbors_in
+
+	def __hash__(self) -> int:
+		return hash((self.__value, frozenset(self.__neighbors_out), frozenset(self.__neighbors_in)))
+
+	@property
+	def value(self) -> T:
+		return self.__value
+
+	@property
+	def neighbors_out(self) -> Set[Adjacency]:
+		return self.__neighbors_out
+
+	@property
+	def neighbors_in(self) -> Set[Adjacency]:
+		return self.__neighbors_in
 
 class Graph(Generic[T]):
 	"""Graph (weighted directed) representation
@@ -10,25 +49,21 @@ class Graph(Generic[T]):
 	- `T` - Type of the nodes
 
 	# Properties
-	- `nodes` - Dictionnary `id => node`
-	- `adjacency` - Adjacency list: set of tuples `(start,end,weight)` which represent `start-(weight)->end`
+	- `nodes` - List of nodes
 	- `compute_weight` - Function to compute edge weight from two nodes
 	"""
 
 	def __init__(self, nodes: Iterable[T], compute_weight: Callable[[T, T], float] = None):
-		self.__nodes: Dict[str, T] = dict()
+		self.__nodes: List[Node[T]] = []
 		for node in nodes:
 			self.add_node(node)
-		self.__adjacency: Set[Adjacency] = set()
+		self.__size: int = 0
 		self.__compute_weight = compute_weight
 
-	def __repr__(self) -> str:
-		return repr(self.__adjacency)
+	def __iter__(self) -> Iterator[Node[T]]:
+		return iter(self.__nodes)
 
-	def __iter__(self) -> Iterator[Tuple[str, T]]:
-		return iter(self.__nodes.items())
-
-	def __getitem__(self, key: str) -> T:
+	def __getitem__(self, key: int) -> Node[T]:
 		return self.__nodes[key]
 
 	@property
@@ -37,31 +72,22 @@ class Graph(Generic[T]):
 
 	@property
 	def size(self) -> int:
-		return len(self.__adjacency)
+		return self.__size
 
-
-	def add_node(self, node: T) -> str:
+	def add_node(self, node: T) -> int:
 		"""Add a node to the graph
 
 		# Arguments
-		- `node` - Node to add
-
-		# Errors thrown
-		- `RuntimeError` if the computed key already exists
+		- `node` - Node value to add
 
 		# Return value
 		Key of the newly-added node
 		"""
-		key = str(node.id if hasattr(node, "id") else self.order)
-		if key not in self.__nodes:
-			self.__nodes[key] = node
-			return key
-		else:
-			raise RuntimeError("{0} already exists as a node key".format(key))
+		self.__nodes.append(Node(node))
+		return len(self.__nodes) - 1
 
-
-	def add_edge(self, u: str, v: str):
-		"""Add an edge `start-(weight)->end` to the graph
+	def add_edge(self, u: int, v: int):
+		"""Add an edge `u-(weight)->v` to the graph
 
 		Will compute the weight using the `compute_weight` property.
 		If `compute_weight` is `None`, the weight will be 0.
@@ -71,58 +97,12 @@ class Graph(Generic[T]):
 		- `end` - Key of the second node
 
 		# Errors thrown
-		- `ValueError` if both keys are equal, or if one key does not exist
+		- `ValueError` if both keys are equal
 		"""
 		if u == v:
-			raise ValueError("start={0} and end={0} are equal".format(u, v))
-		elif u not in self.__nodes:
-			raise ValueError("start={0} does not refer to a node".format(u))
-		elif v not in self.__nodes:
-			raise ValueError("end={0} does not refer to a node".format(v))
+			raise ValueError("u={0} and v={0} are equal".format(u, v))
 		else:
-			weight = float(0) if self.__compute_weight is None else self.__compute_weight(self.__nodes[u], self.__nodes[v])
-			self.__adjacency.add((u,v,weight))
-
-
-	def neighbors_out(self, v: str) -> Set[Tuple[str, float]]:
-		"""Get the outward neighbors of a node
-
-		# Arguments
-		- `end` - Key of the node
-
-		# Return value
-		Set of the keys of nodes that can be accessed from `end`, and the weights of the edges
-		"""
-		neighbors: Set[Tuple[str, float]] = set()
-		for (u, w, weight) in self.__adjacency:
-			if u == v and u != w and w not in neighbors:
-				neighbors.add((w, weight))
-		return neighbors
-
-
-	def neighbors_in(self, v: int) -> Set[Tuple[str, float]]:
-		"""Get the inward neighbors of a node
-
-		# Arguments
-		- `end` - Key of the node
-
-		# Return value
-		Set of the keys of nodes that can access `end`, and the weights of the edges
-		"""
-		neighbors: Set[Tuple[str, float]] = set()
-		for (u, w, weight) in self.__adjacency:
-			if w == v and u != w and u not in neighbors:
-				neighbors.add((u, weight))
-		return neighbors
-
-
-	def neighbors(self, v: int) -> Set[Tuple[str, float]]:
-		"""Get all neighbors of a node
-
-		# Arguments
-		- `end` - Key of the node
-
-		# Return value
-		Set of the keys of neighbors of `end`, and the weights of the edges
-		"""
-		return self.neighbors_in(v).union(self.neighbors_out(v))
+			weight = float(0) if self.__compute_weight is None else self.__compute_weight(self.__nodes[u].value, self.__nodes[v].value)
+			self.__nodes[u].neighbors_out.add((v, weight))
+			self.__nodes[v].neighbors_in.add((u, weight))
+			self.__size += 1
