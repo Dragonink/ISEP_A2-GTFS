@@ -91,24 +91,19 @@ def bfs(self: Pathfinder, v: int):
 def dijkstra(self: Pathfinder, source: int):
 	"""Dijkstra method for `Pathfinder`"""
 
-	print("true that")
 
 	self._previous[source] = dict()
 	self._distance[source] = {source: 0}
 	marked: Set[int] = set()
-	#queue = [source]
 	queue = {0: source}
 
 	while len(queue) > 0:
-		#current = queue.pop(0)
 		current = queue.pop(min(queue))
 
-		#if current in marked:
-		if True:
+		if current not in marked:
 			marked.add(current)
 			for (destination, weight) in self.graph[current].neighbors_out:
-				#if destination in marked:
-				if True:
+				if destination not in marked:
 					new_distance = self._distance[source][current] + weight
 
 					if destination not in self._distance[source] or \
@@ -117,9 +112,3 @@ def dijkstra(self: Pathfinder, source: int):
 						self._distance[source][destination] = new_distance
 
 						queue[new_distance] = destination
-						if destination in marked:
-							print("fuck")
-
-					#if destination not in marked:
-					#	queue.append(destination)
-	print("end")
