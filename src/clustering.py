@@ -29,6 +29,7 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n):
 				print(progress, "%", sep='')
 
 			starting_node = nodes_to_explore.pop()  # Take a node to explore
+			print("Node", starting_node)
 
 			# If the node not been discovered report the discovery of a new cluster
 			if starting_node not in nodes_found:
@@ -39,9 +40,13 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n):
 
 			for target_node in nodes_to_explore:  # Search every other node
 
-				path = DIJKSTRA.get_path(starting_node, target_node)  # Search a path between the two nodes
+				paths = DIJKSTRA.get_paths(starting_node, target_node)  # Search a path between the two nodes
 
-				if path is not None:  # If there is a path...
+				#print(n_paths, "!")
+
+				if paths is not None:  # If there is a path...
+
+					n_paths = len(paths)
 
 					if target_node in nodes_found:
 						for i in range(len(clusters) - 1):
@@ -54,24 +59,28 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n):
 						nodes_found.add(target_node)
 						clusters[len(clusters) - 1].add(target_node)
 
-					last_node = path.pop()  # Get the last node of the path between the two nodes
+					#print(n_paths, "!")
 
-					while path:  # For each edge of the path...
+					for path in paths:
 
-						previous_node = path.pop()  # Get the previous node
-						edge_name = (previous_node, last_node)  # Compute the name of the edge between them
+						last_node = path.pop()  # Get the last node of the path between the two nodes
 
-						# Compute the new edge betweenness
-						if edge_name in edge_betweenness:
-							edge_betweenness[edge_name] += 1
-						else:
-							edge_betweenness[edge_name] = 1
+						while path:  # For each edge of the path...
 
-						# Check if the new betweenness is the higher
-						if edge_betweenness[edge_name] > highest_betweenness[1]:
-							highest_betweenness = [edge_name, edge_betweenness[edge_name]]
+							previous_node = path.pop()  # Get the previous node
+							edge_name = (previous_node, last_node)  # Compute the name of the edge between them
 
-						last_node = previous_node
+							# Compute the new edge betweenness
+							if edge_name in edge_betweenness:
+								edge_betweenness[edge_name] += 1/n_paths
+							else:
+								edge_betweenness[edge_name] = 1/n_paths
+
+							# Check if the new betweenness is the higher
+							if edge_betweenness[edge_name] > highest_betweenness[1]:
+								highest_betweenness = [edge_name, edge_betweenness[edge_name]]
+
+							last_node = previous_node
 
 			if new_cluster:
 				n_clusters = len(clusters) + 1
