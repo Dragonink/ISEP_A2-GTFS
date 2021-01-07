@@ -91,7 +91,6 @@ def bfs(self: Pathfinder, v: int):
 def dijkstra(self: Pathfinder, source: int):
 	"""Dijkstra method for `Pathfinder`"""
 
-
 	self._previous[source] = dict()
 	self._distance[source] = {source: 0}
 	marked: Set[int] = set()
@@ -104,7 +103,9 @@ def dijkstra(self: Pathfinder, source: int):
 			marked.add(current)
 			for (destination, weight) in self.graph[current].neighbors_out:
 				if destination not in marked:
-					new_distance = self._distance[source][current] + weight
+					self._distance[source]
+					old = self._distance[source][current]
+					new_distance = old + weight
 
 					if destination not in self._distance[source] or \
 						new_distance < self._distance[source][destination]:
