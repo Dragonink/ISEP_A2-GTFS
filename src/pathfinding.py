@@ -89,8 +89,7 @@ def dijkstra(self: Pathfinder, v: int):
 	"""Dijkstra method for `Pathfinder`"""
 	if v not in self._previous:
 		self._previous[v] = dict()
-		self._distance[v] = dict()
-		self._distance[v][v] = 0
+		self._distance[v] = {v: 0}
 		marked: Set[int] = set()
 		queue = [v]
 		while len(queue) > 0:
@@ -98,8 +97,10 @@ def dijkstra(self: Pathfinder, v: int):
 			marked.add(current)
 			for (u, weight) in self.graph[current].neighbors_out:
 				tentative_distance = self._distance[v][current] + weight
+
 				if u not in self._distance[v] or tentative_distance < self._distance[v][u]:
 					self._previous[v][u] = current
 					self._distance[v][u] = tentative_distance
+
 				if u not in marked:
 					queue.append(u)

@@ -117,4 +117,6 @@ if __name__ == "__main__":
 	DIJKSTRA = Pathfinder(GRAPH, dijkstra)
 
 	# Create clustering
-	clustering(DIJKSTRA, set(id_map.values()), 5)
+	clustering(DIJKSTRA, set(id_map.values()), 250)
+
+	# 227 clusters dans le graph de base
