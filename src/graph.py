@@ -85,7 +85,6 @@ class Graph(Generic[T]):
 		"""
 		self.__nodes.append(Node(node))
 		return len(self.__nodes) - 1
-
 	def add_edge(self, u: int, v: int):
 		"""Add an edge `u-(weight)->v` to the graph
 
@@ -93,8 +92,8 @@ class Graph(Generic[T]):
 		If `compute_weight` is `None`, the weight will be 0.
 
 		# Arguments
-		- `u` - Key of the first node
-		- `v` - Key of the second node
+		- `start` - Key of the first node
+		- `end` - Key of the second node
 
 		# Errors thrown
 		- `ValueError` if both keys are equal

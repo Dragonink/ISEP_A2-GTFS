@@ -8,7 +8,8 @@ class Pathfinder:
 
 	# Properties
 	- `graph` - Graph used to compute pathfinding
-	- `previous` - Dictionnary `from => to => previous` where `previous` is the previous node of `to` when searching from `from`
+	- `previous` - Dictionnary `from => to => previous` where `previous` is the previous node of `to` when searching
+					from `from`
 	- `distance` - Dictionnary `from => to => distance`
 	- `method` - Function to compute shortest paths from a node
 	"""
@@ -23,15 +24,13 @@ class Pathfinder:
 		"""Check if a path exist between two nodes
 
 		# Arguments
-		- `u` - Key of the starting node
-		- `v` - Key of the ending node
+		- `start` - Key of the starting node
+		- `end` - Key of the ending node
 
 		# Return value
 		`True` if a path exists; `False` otherwise
 		"""
-		if u not in self._previous:
-			self.__method(self, u)
-		return v in self._previous[u]
+		return u in self._previous and v in self._previous[u]
 
 	def get_path(self, u: int, v: int):
 		"""Get the shortest path between two nodes
@@ -59,8 +58,8 @@ class Pathfinder:
 		"""Get the distance between two nodes
 
 		# Arguments
-		- `u` - Key of the starting node
-		- `v` - Key of the ending node
+		- `start` - Key of the starting node
+		- `end` - Key of the ending node
 
 		# Return value
 		Distance from `u` to `v`, in edges
@@ -87,6 +86,7 @@ def bfs(self: Pathfinder, v: int):
 
 def dijkstra(self: Pathfinder, v: int):
 	"""Dijkstra method for `Pathfinder`"""
+
 	if v not in self._previous:
 		self._previous[v] = dict()
 		self._distance[v] = dict()
