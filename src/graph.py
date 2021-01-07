@@ -38,25 +38,13 @@ class Node(Generic[T]):
 	def value(self) -> T:
 		return self.__value
 
+	@property
 	def neighbors_out(self) -> List[Adjacency]:
-		"""Compute the list of outward neighbors of the node
+		return self._neighbors_out
 
-		The result should be saved in a variable if you want to use it several times
-
-		# Return value
-		Sorted list of adjacency tuples
-		"""
-		return sorted(self._neighbors_out)
-
+	@property
 	def neighbors_in(self) -> List[Adjacency]:
-		"""Compute the list of inward neighbors of the node
-
-		The result should be saved in a variable if you want to use it several times
-
-		# Return value
-		Sorted list of adjacency tuples
-		"""
-		return sorted(self._neighbors_in)
+		return self._neighbors_in
 
 class Graph(Generic[T]):
 	"""Graph (weighted directed) representation

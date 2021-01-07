@@ -82,20 +82,19 @@ def import_edges(file: str) -> Set[Tuple[str, str]]:
 	# Return value
 	Set of ordered tuples of stop IDs
 	"""
-	trips: Dict[str, Dict[int, str]] = dict()
+	trips: Dict[str, List[Tuple[int, str]]] = dict()
 	# Import raw data
 	with open(file, "rt") as data:
 		for line in data.readlines()[1:]:
 			cols = line.split(",")
 			if cols[0] not in trips:
-				trips[cols[0]] = dict()
-			trips[cols[0]][int(cols[4])] = cols[3]
+				trips[cols[0]] = []
+			heappush(trips[cols[0]], (int(cols[4]), cols[3]))
 	# Transform data
 	edges: Set[Tuple[str, str]] = set()
 	for trip in trips.values():
-		stop_seq = sorted(trip)
-		for (i, stop) in enumerate(stop_seq[:-1]):
-			edges.add((trip[stop], trip[stop_seq[i + 1]]))
+		while len(trip) > 1:
+			edges.add((heappop(trip)[1], trip[0][1]))
 	return edges
 
 

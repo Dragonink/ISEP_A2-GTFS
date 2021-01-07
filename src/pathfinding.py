@@ -21,7 +21,7 @@ class Pathfinder(Generic[T]):
 
 	def __init__(self, graph: Graph[T], method: Callable[['Pathfinder[T]', int], None]):
 		self.graph = graph
-		self._previous: Dict[int, Dict[int, List[int]]] = dict()
+		self._previous: Dict[int, Dict[int, Set[int]]] = dict()
 		self._distance: Dict[int, Dict[int, float]] = dict()
 		self.__method = method
 
@@ -74,7 +74,8 @@ class Pathfinder(Generic[T]):
 						else:
 							path[pos + 1] = previous
 						__recurse(path, pos + 1)
-			__recurse([end], 0)
+			if self.has_path(start, end):
+				__recurse([end], 0)
 			return paths
 
 	def get_distance(self, start: int, end: int) -> float:
@@ -102,13 +103,13 @@ def bfs(self: Pathfinder[T], start: int):
 		heapify(queue)
 		while len(queue) > 0:
 			current = heappop(queue)
-			for (u, _) in self.graph[current].neighbors_out():
+			for (u, _) in self.graph[current].neighbors_out:
 				if u not in self._distance[start]:
-					self._previous[start][u] = []
+					self._previous[start][u] = set()
 					self._distance[start][u] = self._distance[start][current] + 1
 					heappush(queue, u)
 				if self._distance[start][u] == self._distance[start][current] + 1:
-					heappush(self._previous[start][u], current)
+					self._previous[start][u].add(current)
 
 def dijkstra(self: Pathfinder[T], start: int):
 	"""Dijkstra method for `Pathfinder`"""
@@ -122,12 +123,12 @@ def dijkstra(self: Pathfinder[T], start: int):
 		while len(queue) > 0:
 			_, current = heappop(queue)
 			marked.add(current)
-			for (u, weight) in self.graph[current].neighbors_out():
+			for (u, weight) in self.graph[current].neighbors_out:
 				tentative_distance = self._distance[start][current] + weight
 				if u not in self._distance[start] or tentative_distance < self._distance[start][u]:
-					self._previous[start][u] = []
+					self._previous[start][u] = set()
 					self._distance[start][u] = tentative_distance
 				if self._distance[start][u] == tentative_distance:
-					heappush(self._previous[start][u], current)
+					self._previous[start][u].add(current)
 				if u not in marked:
 					heappush(queue, (self._distance[start][u], u))
