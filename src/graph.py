@@ -85,7 +85,9 @@ class Graph(Generic[T]):
 		"""
 		self.__nodes.append(Node(node))
 		return len(self.__nodes) - 1
-	def add_edge(self, u: int, v: int):
+
+
+	def add_edge(self, start: int, end: int):
 		"""Add an edge `u-(weight)->v` to the graph
 
 		Will compute the weight using the `compute_weight` property.
@@ -98,10 +100,10 @@ class Graph(Generic[T]):
 		# Errors thrown
 		- `ValueError` if both keys are equal
 		"""
-		if u == v:
-			raise ValueError("u={0} and v={0} are equal".format(u, v))
+		if start == end:
+			raise ValueError("u={0} and v={0} are equal".format(start, end))
 		else:
-			weight = float(0) if self.__compute_weight is None else self.__compute_weight(self.__nodes[u].value, self.__nodes[v].value)
-			self.__nodes[u].neighbors_out.add((v, weight))
-			self.__nodes[v].neighbors_in.add((u, weight))
+			weight = float(0) if self.__compute_weight is None else self.__compute_weight(self.__nodes[start].value, self.__nodes[end].value)
+			self.__nodes[start].neighbors_out.add((end, weight))
+			self.__nodes[end].neighbors_in.add((start, weight))
 			self.__size += 1
