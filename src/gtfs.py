@@ -8,8 +8,8 @@ from timing import timing
 from pathfinding import *
 from clustering import clustering
 
-Position = Tuple[float, float]
 
+Position = Tuple[float, float]
 
 class Stop:
 	"""Stop representation
@@ -34,6 +34,9 @@ class Stop:
 
 	def __repr__(self) -> str:
 		return "{0} {1}".format(self.__id, self.__position)
+
+	def __lt__(self, other: 'Stop') -> bool:
+		return self.id < other.id
 
 	def __eq__(self, other: 'Stop') -> bool:
 		return self.id == other.id and self.position == other.position
@@ -75,6 +78,7 @@ def import_edges(file: str) -> Set[Tuple[str, str]]:
 
 	# Arguments
 	- `file` - Path to the file
+
 	# Return value
 	Set of ordered tuples of stop IDs
 	"""
@@ -96,12 +100,17 @@ def import_edges(file: str) -> Set[Tuple[str, str]]:
 
 
 if __name__ == "__main__":
+	# Get data path
+	"""The path to the data files can be set using a script argument.
+
+	For example, if you execute Python from the workspace root, you can enter: `python src/gtfs.py ./data/`.
+	Or, if you execute Python from the `src/` directory: `python gtfs.py ../data/`.
+	"""
 	DATAPATH = argv[1] if len(argv) > 1 else getcwd()
-	DATAPATH = DATAPATH[:DATAPATH.find("ISEP_A2-GTFS")+12] + "/data/"
 	# Import data
-	((stops, id_map), exetime) = timing(import_stops)(join(DATAPATH, "stops.txt"))
+	(stops, id_map), exetime = timing(import_stops)(join(DATAPATH, "stops.txt"))
 	print("Imported {0} stops in {1}ms".format(len(stops), exetime * 1e3))
-	(edges, exetime) = timing(import_edges)(join(DATAPATH, "stop_times.txt"))
+	edges, exetime = timing(import_edges)(join(DATAPATH, "stop_times.txt"))
 	print("Imported {0} edges in {1}ms".format(len(edges), exetime * 1e3))
 
 	# Construct graph
@@ -117,4 +126,4 @@ if __name__ == "__main__":
 	DIJKSTRA = Pathfinder(GRAPH, dijkstra)
 
 	# Create clustering
-	clustering(DIJKSTRA, set(id_map.values()), 5)
+	# clustering(DIJKSTRA, set(id_map.values()), 5)

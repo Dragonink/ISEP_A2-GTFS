@@ -1,4 +1,5 @@
-from typing import Callable, Generic, Iterable, Iterator, List, Set, Tuple, TypeVar
+from typing import Callable, Generic, Iterable, Iterator, List, Tuple, TypeVar
+from heapq import heappush
 
 
 T = TypeVar("T")
@@ -12,35 +13,50 @@ class Node(Generic[T]):
 
 	# Properties
 	- `value` - Value of the node
-	- `neighbors_out` - Outward neighbors of the node
-	- `neighbors_in` - Inward neighbors of the node
+	- `neighbors_out` - Heap of outward neighbors of the node
+	- `neighbors_in` - Heap of inward neighbors of the node
 	"""
 
 	def __init__(self, value: T):
 		self.__value = value
-		self.__neighbors_out: Set[Adjacency] = set()
-		self.__neighbors_in: Set[Adjacency] = set()
+		self._neighbors_out: List[Adjacency] = []
+		self._neighbors_in: List[Adjacency] = []
 
 	def __repr__(self) -> str:
 		return repr(self.__value)
 
+	def __lt__(self, other: 'Node') -> bool:
+		return self.value < other.value
+
 	def __eq__(self, other: 'Node') -> bool:
-		return self.value == other.value and self.neighbors_out == other.neighbors_out and self.neighbors_in == other.neighbors_in
+		return self.value == other.value
 
 	def __hash__(self) -> int:
-		return hash((self.__value, frozenset(self.__neighbors_out), frozenset(self.__neighbors_in)))
+		return hash(self.__value)
 
 	@property
 	def value(self) -> T:
 		return self.__value
 
-	@property
-	def neighbors_out(self) -> Set[Adjacency]:
-		return self.__neighbors_out
+	def neighbors_out(self) -> List[Adjacency]:
+		"""Compute the list of outward neighbors of the node
 
-	@property
-	def neighbors_in(self) -> Set[Adjacency]:
-		return self.__neighbors_in
+		The result should be saved in a variable if you want to use it several times
+
+		# Return value
+		Sorted list of adjacency tuples
+		"""
+		return sorted(self._neighbors_out)
+
+	def neighbors_in(self) -> List[Adjacency]:
+		"""Compute the list of inward neighbors of the node
+
+		The result should be saved in a variable if you want to use it several times
+
+		# Return value
+		Sorted list of adjacency tuples
+		"""
+		return sorted(self._neighbors_in)
 
 class Graph(Generic[T]):
 	"""Graph (weighted directed) representation
@@ -50,6 +66,7 @@ class Graph(Generic[T]):
 
 	# Properties
 	- `nodes` - List of nodes
+	- `size` - Size of the graph
 	- `compute_weight` - Function to compute edge weight from two nodes
 	"""
 
@@ -74,17 +91,13 @@ class Graph(Generic[T]):
 	def size(self) -> int:
 		return self.__size
 
-	def add_node(self, node: T) -> int:
+	def add_node(self, node: T):
 		"""Add a node to the graph
 
 		# Arguments
 		- `node` - Node value to add
-
-		# Return value
-		Key of the newly-added node
 		"""
 		self.__nodes.append(Node(node))
-		return len(self.__nodes) - 1
 
 	def add_edge(self, start: int, end: int):
 		"""Add an edge `u-(weight)->v` to the graph
@@ -100,9 +113,9 @@ class Graph(Generic[T]):
 		- `ValueError` if both keys are equal
 		"""
 		if start == end:
-			raise ValueError("u={0} and v={0} are equal".format(start, end))
+			raise ValueError("start={0} and end={0} are equal".format(start, end))
 		else:
-			weight = float(0) if self.__compute_weight is None else self.__compute_weight(self.__nodes[start].value, self.__nodes[end].value)
-			self.__nodes[start].neighbors_out.add((end, weight))
-			self.__nodes[end].neighbors_in.add((start, weight))
+			weight = 0 if self.__compute_weight is None else self.__compute_weight(self.__nodes[start].value, self.__nodes[end].value)
+			heappush(self.__nodes[start]._neighbors_out, (end, weight))
+			heappush(self.__nodes[end]._neighbors_in, (start, weight))
 			self.__size += 1
