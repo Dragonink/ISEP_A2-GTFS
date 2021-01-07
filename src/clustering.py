@@ -18,19 +18,20 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n):
 		highest_betweenness = ["", 0]  # Edge with the biggest betweeness
 		nodes_to_explore = nodes  # List of nodes to explore
 
-		while nodes_to_explore:  # As long as there is still unexplored nodes
-			print(len(nodes_to_explore), "nodes to explore left")
-			starting_node = nodes_to_explore.pop()  # Take a node to explore
+        while nodes_to_explore:  # As long as there is still unexplored nodes
+            #print(len(nodes_to_explore), "nodes to explore left")
+            starting_node = nodes_to_explore.pop()  # Take a node to explore
 
-			# If the node not been discovered report the discovery of a new cluster
-			if starting_node not in nodes_found:
-				n_clusters += 1
-				print("Cluster #", n_clusters, " found!", sep='')
-			nodes_found.add(starting_node)  # Add the node to the discovered nodes list
+            # If the node not been discovered report the discovery of a new cluster
+            if starting_node not in nodes_found:
+                n_clusters += 1
+                #print("Cluster n°", n_clusters, " found!", sep='')
+            nodes_found.add(starting_node)  # Add the node to the discovered nodes list
 
 			for target_node in nodes_to_explore:  # Search every other node
 
-				path = DIJKSTRA.get_path(starting_node, target_node)  # Search a path between the two nodes
+                path = DIJKSTRA.get_path(starting_node, target_node)  # Search a path between the two nodes
+                print("hello", path)
 
 				if path is not None:  # Iff there is a path...
 

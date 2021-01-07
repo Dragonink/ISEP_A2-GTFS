@@ -65,9 +65,11 @@ class Pathfinder:
 		# Return value
 		Distance from `u` to `v`, in edges
 		"""
-		if start not in self._previous:
-			self.__method(self, start)
-		return self._distance[start][end] if end in self._distance[start] else inf
+
+		if start not in self._previous:  # # If the connections between source and the other nodes have not been referenced
+			self.__method(self, start)  # ...do it using the search algorithm chosen
+
+		return self._distance[start][end] if v in self._distance[start] else inf
 
 
 def bfs(self: Pathfinder, v: int):
@@ -85,29 +87,39 @@ def bfs(self: Pathfinder, v: int):
 					self._distance[v][u] = self._distance[v][current] + 1
 					queue.append(u)
 
-def dijkstra(self: Pathfinder, v: int):
+
+def dijkstra(self: Pathfinder, source: int):
 	"""Dijkstra method for `Pathfinder`"""
-	if v not in self._previous:
-		self._previous[v] = dict()
-		self._distance[v] = {v: 0}
-		marked: Set[int] = set()
-		queue = [v]
-		#queue = {0: v}
-		while len(queue) > 0:
-			current = queue.pop(0)
-			#current = queue.pop(min(queue))
-			print(current)
+
+	print("true that")
+
+	self._previous[source] = dict()
+	self._distance[source] = {source: 0}
+	marked: Set[int] = set()
+	#queue = [source]
+	queue = {0: source}
+
+	while len(queue) > 0:
+		#current = queue.pop(0)
+		current = queue.pop(min(queue))
+
+		#if current in marked:
+		if True:
 			marked.add(current)
-			for (u, weight) in self.graph[current].neighbors_out:
-				tentative_distance = self._distance[v][current] + weight
+			for (destination, weight) in self.graph[current].neighbors_out:
+				#if destination in marked:
+				if True:
+					new_distance = self._distance[source][current] + weight
 
-				if u not in self._distance[v] or tentative_distance < self._distance[v][u]:
-					self._previous[v][u] = current
-					self._distance[v][u] = tentative_distance
+					if destination not in self._distance[source] or \
+						new_distance < self._distance[source][destination]:
+						self._previous[source][destination] = current
+						self._distance[source][destination] = new_distance
 
-					if u in marked:
-						print("fuck")
+						queue[new_distance] = destination
+						if destination in marked:
+							print("fuck")
 
-				if u not in marked:
-					queue.append(u)
-		print("end")
+					#if destination not in marked:
+					#	queue.append(destination)
+	print("end")
