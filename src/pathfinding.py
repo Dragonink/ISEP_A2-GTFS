@@ -25,6 +25,17 @@ class Pathfinder(Generic[T]):
 		self._distance: Dict[int, Dict[int, float]] = dict()
 		self.__method = method
 
+	def compute(self, start: int):
+		"""Execute the pathfinding method from a certain node
+
+		Save the newly computed data to the save file
+
+		# Arguments
+		- `start` - Key of the starting node
+		"""
+		if start not in self._previous:
+			self.__method(self, start)
+
 	def has_path(self, start: int, end: int) -> bool:
 		"""Check if a path exist between two nodes
 
@@ -42,7 +53,7 @@ class Pathfinder(Generic[T]):
 			raise ValueError("start={0} and end={0} are equal".format(start, end))
 		else:
 			if start not in self._previous:
-				self.__method(self, start)
+				self.compute(start)
 			return end in self._previous[start]
 
 	def get_paths(self, start: int, end: int) -> List[List[int]]:
@@ -62,7 +73,7 @@ class Pathfinder(Generic[T]):
 			raise ValueError("start={0} and end={0} are equal".format(start, end))
 		else:
 			if start not in self._previous:
-				self.__method(self, start)
+				self.compute(start)
 			paths: List[List[int]] = []
 			def __recurse(path: List[int], pos: int):
 				if path[pos] == start:
@@ -89,7 +100,7 @@ class Pathfinder(Generic[T]):
 		Distance from `start` to `end`, in edges
 		"""
 		if start not in self._previous:
-			self.__method(self, start)
+			self.compute(start)
 		return self._distance[start][end] if end in self._distance[start] else inf
 
 
@@ -103,7 +114,7 @@ def bfs(self: Pathfinder[T], start: int):
 		heapify(queue)
 		while len(queue) > 0:
 			current = heappop(queue)
-			for (u, _) in self.graph[current].neighbors_out:
+			for u in self.graph[current].neighbors_out:
 				if u not in self._distance[start]:
 					self._previous[start][u] = set()
 					self._distance[start][u] = self._distance[start][current] + 1
@@ -123,7 +134,7 @@ def dijkstra(self: Pathfinder[T], start: int):
 		while len(queue) > 0:
 			_, current = heappop(queue)
 			marked.add(current)
-			for (u, weight) in self.graph[current].neighbors_out:
+			for (u, weight) in self.graph[current].neighbors_out.items():
 				tentative_distance = self._distance[start][current] + weight
 				if u not in self._distance[start] or tentative_distance < self._distance[start][u]:
 					self._previous[start][u] = set()

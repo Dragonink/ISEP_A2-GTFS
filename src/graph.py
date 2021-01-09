@@ -1,9 +1,7 @@
-from typing import Callable, Generic, Iterable, Iterator, List, Tuple, TypeVar
-from heapq import heappush
+from typing import Callable, Dict, Generic, Iterable, Iterator, List, TypeVar
 
 
 T = TypeVar("T")
-Adjacency = Tuple[int, float]
 
 class Node(Generic[T]):
 	"""Graph node representation
@@ -13,14 +11,14 @@ class Node(Generic[T]):
 
 	# Properties
 	- `value` - Value of the node
-	- `neighbors_out` - Heap of outward neighbors of the node
-	- `neighbors_in` - Heap of inward neighbors of the node
+	- `neighbors_out` - Dictionnary `node => weight` of outward neighbors
+	- `neighbors_in` - Dictionnary `node => weight` of inward neighbors
 	"""
 
 	def __init__(self, value: T):
 		self.__value = value
-		self._neighbors_out: List[Adjacency] = []
-		self._neighbors_in: List[Adjacency] = []
+		self._neighbors_out: Dict[int, float] = dict()
+		self._neighbors_in: Dict[int, float] = dict()
 
 	def __repr__(self) -> str:
 		return repr(self.__value)
@@ -39,11 +37,11 @@ class Node(Generic[T]):
 		return self.__value
 
 	@property
-	def neighbors_out(self) -> List[Adjacency]:
+	def neighbors_out(self) -> Dict[int, float]:
 		return self._neighbors_out
 
 	@property
-	def neighbors_in(self) -> List[Adjacency]:
+	def neighbors_in(self) -> Dict[int, float]:
 		return self._neighbors_in
 
 class Graph(Generic[T]):
@@ -104,6 +102,6 @@ class Graph(Generic[T]):
 			raise ValueError("start={0} and end={0} are equal".format(start, end))
 		else:
 			weight = 0 if self.__compute_weight is None else self.__compute_weight(self.__nodes[start].value, self.__nodes[end].value)
-			heappush(self.__nodes[start]._neighbors_out, (end, weight))
-			heappush(self.__nodes[end]._neighbors_in, (start, weight))
+			self.__nodes[start].neighbors_out[end] = weight
+			self.__nodes[end].neighbors_in[start] = weight
 			self.__size += 1
