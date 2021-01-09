@@ -53,11 +53,11 @@ class Stop:
 		return self.__position
 
 
-def import_stops(file: str) -> Tuple[List[Stop], Dict[str, int]]:
+def import_stops(path: str) -> Tuple[List[Stop], Dict[str, int]]:
 	"""Import stops from GTFS `stops.txt`
 
 	# Arguments
-	- `file` - Path to the file
+	- `path` - Path to the file
 
 	# Return value
 	Tuple `(stops, id_map)` where `stops` is a list of `Stop` instances,
@@ -65,37 +65,37 @@ def import_stops(file: str) -> Tuple[List[Stop], Dict[str, int]]:
 	"""
 	stops: List[Stop] = []
 	id_map: Dict[str, int] = dict()
-	with open(file, "rt") as data:
-		for (i, line) in enumerate(data.readlines()[1:]):
-			stop = Stop.from_csv(line)
-			stops.append(stop)
-			id_map[stop.id] = i
+	with open(path, "rt") as file:
+		for i, line in enumerate(file):
+			if i > 0:
+				stop = Stop.from_csv(line)
+				stops.append(stop)
+				id_map[stop.id] = i - 1
 	return stops, id_map
 
-
-def import_edges(file: str) -> Set[Tuple[str, str]]:
+def import_edges(path: str) -> Set[Tuple[str, str]]:
 	"""Import edges from GTFS `stop_times.txt`
 
 	# Arguments
-	- `file` - Path to the file
+	- `path` - Path to the file
 
 	# Return value
 	Set of ordered tuples of stop IDs
 	"""
-	trips: Dict[str, Dict[int, str]] = dict()
+	trips: Dict[str, List[Tuple[int, str]]] = dict()
 	# Import raw data
-	with open(file, "rt") as data:
-		for line in data.readlines()[1:]:
-			cols = line.split(",")
-			if cols[0] not in trips:
-				trips[cols[0]] = dict()
-			trips[cols[0]][int(cols[4])] = cols[3]
+	with open(path, "rt") as file:
+		for i, line in enumerate(file):
+			if i > 0:
+				data = line.split(",")
+				if data[0] not in trips:
+					trips[data[0]] = []
+				heappush(trips[data[0]], (int(data[4]), data[3]))
 	# Transform data
 	edges: Set[Tuple[str, str]] = set()
 	for trip in trips.values():
-		stop_seq = sorted(trip)
-		for (i, stop) in enumerate(stop_seq[:-1]):
-			edges.add((trip[stop], trip[stop_seq[i + 1]]))
+		while len(trip) > 1:
+			edges.add((heappop(trip)[1], trip[0][1]))
 	return edges
 
 
@@ -123,8 +123,8 @@ if __name__ == "__main__":
 	print("Constructed graph in {0}ms".format((perf_counter() - exetime) * 1e3))
 
 	# Construct pathfinders
-	BFS = Pathfinder(GRAPH, bfs)
-	DIJKSTRA = Pathfinder(GRAPH, dijkstra)
+	BFS = Pathfinder(GRAPH, bfs, join(DATAPATH, "generated_bfs.txt"))
+	DIJKSTRA = Pathfinder(GRAPH, dijkstra, join(DATAPATH, "generated_dijkstra.txt"))
 
 	# Create clustering
 	clustering(DIJKSTRA, set(id_map.values()), 5)
