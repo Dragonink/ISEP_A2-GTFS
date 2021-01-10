@@ -110,9 +110,9 @@ if __name__ == "__main__":
 
 	# Import data
 	(stops, id_map), exetime = timing(import_stops)(join(DATAPATH, "stops.txt"))
-	print("Imported {0} stops in {1}ms".format(len(stops), exetime * 1e3))
+	print("Imported {0} stops in {1}ms".format(len(stops), round(exetime * 1e3)))
 	edges, exetime = timing(import_edges)(join(DATAPATH, "stop_times.txt"))
-	print("Imported {0} edges in {1}ms".format(len(edges), exetime * 1e3))
+	print("Imported {0} edges in {1}ms".format(len(edges), round(exetime * 1e3)))
 
 	# Construct graph
 	exetime = perf_counter()
@@ -120,7 +120,7 @@ if __name__ == "__main__":
 		(v.position[0] - u.position[0]) ** 2 + (v.position[1] - u.position[1]) ** 2))
 	for edge in edges:
 		GRAPH.add_edge(id_map[edge[0]], id_map[edge[1]])
-	print("Constructed graph in {0}ms".format((perf_counter() - exetime) * 1e3))
+	print("Constructed graph in {0}ms".format(round((perf_counter() - exetime) * 1e3)))
 
 	# Construct pathfinders
 	BFS = Pathfinder(GRAPH, bfs, join(DATAPATH, "generated_bfs.txt"))

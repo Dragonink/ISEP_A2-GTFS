@@ -3,6 +3,7 @@ from os.path import isfile
 from math import inf
 from heapq import heapify, heappop, heappush
 from graph import Graph
+from timing import timing
 
 T = TypeVar("T")
 
@@ -88,7 +89,10 @@ class Pathfinder(Generic[T]):
 			raise ValueError("start={0} and end={0} are equal".format(start, end))
 		else:
 			if start not in self._previous:
-				self.compute(start)
+				print("Dijkstra launched...")
+				(), exetime = timing(self.compute)(start)
+				print("Dijkstra of {0} in {1}ms".format(start, round(exetime * 1e3)))
+				#self.compute(start)
 			return end in self._previous[start]
 
 	def get_paths(self, start: int, end: int) -> List[List[int]]:
@@ -108,7 +112,10 @@ class Pathfinder(Generic[T]):
 			raise ValueError("start={0} and end={0} are equal".format(start, end))
 		else:
 			if start not in self._previous:
-				self.compute(start)
+				print("Dijkstra of", start, "launched...")
+				(_), exetime = timing(self.compute)(start)
+				print("Computed in {0}ms".format(round(exetime * 1e3)))
+				#self.compute(start)
 			paths: List[List[int]] = []
 
 			def __recurse(path: List[int], pos: int):
@@ -121,6 +128,7 @@ class Pathfinder(Generic[T]):
 						else:
 							path[pos + 1] = previous
 						__recurse(path, pos + 1)
+
 			if self.has_path(start, end):
 				__recurse([end], 0)
 			return paths
@@ -140,6 +148,7 @@ class Pathfinder(Generic[T]):
 		if start not in self._distance:
 			# Data has been imported, we need to compute distances
 			self._distance[start] = dict()
+
 			def __recurse(_acc: float, node: int) -> float:
 				if node in self._distance[start]:
 					return _acc + self._distance[start][node]
@@ -151,6 +160,7 @@ class Pathfinder(Generic[T]):
 						return __recurse(_acc + self.graph[node].neighbors_in[previous], previous)
 				else:
 					return inf
+
 			for node in self._previous[start]:
 				distance = __recurse(node)
 				if distance < inf:
