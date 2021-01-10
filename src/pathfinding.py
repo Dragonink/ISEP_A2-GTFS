@@ -25,6 +25,10 @@ class Pathfinder(Generic[T]):
 		self._distance: Dict[int, Dict[int, float]] = dict()
 		self.__method = method
 
+	def reset(self):
+		"""Reset the pathfinding results"""
+		Pathfinder.__init__(self, self.graph, self.__method)
+
 	def compute(self, start: int):
 		"""Execute the pathfinding method from a certain node
 
