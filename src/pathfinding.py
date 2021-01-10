@@ -2,9 +2,11 @@ from typing import Callable, Dict, Generic, List, Set, Tuple, TypeVar
 from math import inf
 from heapq import heapify, heappop, heappush
 from graph import Graph
+from timing import timing
 
 
 T = TypeVar("T")
+
 
 class Pathfinder(Generic[T]):
 	"""Wrapping class to allow pathfinding in graphs
@@ -21,9 +23,15 @@ class Pathfinder(Generic[T]):
 
 	def __init__(self, graph: Graph[T], method: Callable[['Pathfinder[T]', int], None]):
 		self.graph = graph
-		self._previous: Dict[int, Dict[int, Set[int]]] = dict()
 		self._distance: Dict[int, Dict[int, float]] = dict()
+		self._previous: Dict[int, Dict[int, Set[int]]] = dict()
 		self.__method = method
+
+
+	def reset(self):
+		self._distance = dict()
+		self._previous = dict()
+
 
 	def compute(self, start: int):
 		"""Execute the pathfinding method from a certain node
@@ -53,10 +61,10 @@ class Pathfinder(Generic[T]):
 			raise ValueError("start={0} and end={0} are equal".format(start, end))
 		else:
 			if start not in self._previous:
-				print("Dijkstra launched...")
-				(), exetime = timing(self.compute)(start)
-				print("Dijkstra of {0} in {1}ms".format(start, round(exetime * 1e3)))
-				#self.compute(start)
+				#print("Dijkstra launched...")
+				#(), exetime = timing(self.compute)(start)
+				#print("Dijkstra of {0} in {1}ms".format(start, round(exetime * 1e3)))
+				self.compute(start)
 			return end in self._previous[start]
 
 	def get_paths(self, start: int, end: int) -> List[List[int]]:
@@ -76,10 +84,10 @@ class Pathfinder(Generic[T]):
 			raise ValueError("start={0} and end={0} are equal".format(start, end))
 		else:
 			if start not in self._previous:
-				print("Dijkstra of", start, "launched...")
-				(_), exetime = timing(self.compute)(start)
-				print("Computed in {0}ms".format(round(exetime * 1e3)))
-				#self.compute(start)
+				#print("Dijkstra of", start, "launched...")
+				#(_), exetime = timing(self.compute)(start)
+				#print("Computed in {0}ms".format(round(exetime * 1e3)))
+				self.compute(start)
 			paths: List[List[int]] = []
 			def __recurse(path: List[int], pos: int):
 				if path[pos] == start:
@@ -153,3 +161,6 @@ def dijkstra(self: Pathfinder[T], start: int):
 					self._previous[start][u].add(current)
 				if u not in marked:
 					heappush(queue, (self._distance[start][u], u))
+
+
+

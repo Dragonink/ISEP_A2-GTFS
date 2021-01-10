@@ -14,7 +14,10 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n):
 
 	while len(clusters) < n:  # As long as the right number of clusters has not been constituted
 
+		print("\nNew Iteration:")
+
 		edge_betweenness = {}  # Betweenness of each edge
+		DIJKSTRA.reset()
 		nodes_found = set()  # List of discovered nodes
 		new_cluster = False  # Reset the number of clusters
 		nodes_to_explore = nodes.copy()  # List of nodes to explore
@@ -25,7 +28,7 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n):
 		while nodes_to_explore:  # As long as there is still unexplored nodes
 
 			# Displaying the progress
-			new_progress = round(100 * (1 - len(nodes_to_explore) / n_nodes), 1)
+			new_progress = int(round(100 * (1 - len(nodes_to_explore) / n_nodes), -1))
 			if new_progress > progress:
 				progress = new_progress
 				print(progress, "%", sep='')
@@ -108,19 +111,19 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n):
 		# print("Edges betweenness:", edge_betweenness)
 		print(n_clusters, "clusters found")
 		for i in range(n_clusters):
-			print("Cluster n°", i, " found: size (not final): ", len(clusters[i]),
-				  " (", round(100 * len(clusters[i]) / n_nodes), "%)", sep='')
+			print("Cluster n°", i, " found, size: ", len(clusters[i]), " (", round(100 * len(clusters[i]) / n_nodes),
+				  "%)", sep='')
 
 		# Delete as many edges as there are clusters to create
 		for i in range(n - n_clusters):
 
-			highest_betweenness = max(edge_betweenness)  # Get the edge with the highest betweenness
-			print("Highest betweenness:", edge_betweenness[highest_betweenness], "(between", highest_betweenness[0],
-				  "and", highest_betweenness[1], ")")
+			highest_betweenness = max(edge_betweenness, key=edge_betweenness.get)  # Get the edge with the highest betweenness
+			print("Deleting the edge between ", highest_betweenness[0], " and ", highest_betweenness[1],
+				  " (Betweenness: ", edge_betweenness[highest_betweenness], ")", sep='')
 			del edge_betweenness[highest_betweenness]  # Delete it from the list of edges betweenness
 
 			# Deleting the edge by deleting its name from the neighbors_out list of the start node
-			DIJKSTRA.graph[highest_betweenness[0]].neighbors_out.remove(highest_betweenness[1])
+			del DIJKSTRA.graph[highest_betweenness[0]].neighbors_out[highest_betweenness[1]]
 			"""
 			Doing so should delete de facto the edge from the graph.
 			A ghost edge will still be listed in neighbors_in but it shouldn't be used by the program

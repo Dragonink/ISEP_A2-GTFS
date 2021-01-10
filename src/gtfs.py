@@ -66,6 +66,7 @@ def import_stops(path: str) -> Tuple[List[Stop], Dict[str, int]]:
 					id_map[stop.id] = len(stops) - 1
 	return stops, id_map
 
+
 def import_edges(path: str, id_map: Dict[str, int]) -> Set[Tuple[int, int]]:
 	"""Import edges from GTFS `stop_times.txt`
 
@@ -101,12 +102,13 @@ if __name__ == "__main__":
 	For example, if you execute Python from the workspace root, you can enter: `python src/gtfs.py ./data/`.
 	Or, if you execute Python from the `src/` directory: `python gtfs.py ../data/`.
 	"""
-	DATAPATH = argv[1] if len(argv) > 1 else getcwd()
+	DATAPATH = argv[1] if len(argv) > 1 else "../data/"
+
 	# Import data
 	(stops, id_map), exetime = timing(import_stops)(join(DATAPATH, "stops.txt"))
-	print("Imported {0} stops in {1}ms".format(len(stops), exetime * 1e3))
+	print("Imported {0} stops in {1}ms".format(len(stops), round(exetime * 1e3)))
 	edges, exetime = timing(import_edges)(join(DATAPATH, "stop_times.txt"), id_map)
-	print("Imported {0} edges in {1}ms".format(len(edges), exetime * 1e3))
+	print("Imported {0} edges in {1}ms".format(len(edges), round(exetime * 1e3)))
 
 	# Construct graph
 	exetime = perf_counter()
@@ -114,11 +116,11 @@ if __name__ == "__main__":
 		(v.position[0] - u.position[0]) ** 2 + (v.position[1] - u.position[1]) ** 2))
 	for start, end in edges:
 		GRAPH.add_edge(start, end)
-	print("Constructed graph in {0}ms".format((perf_counter() - exetime) * 1e3))
+	print("Constructed graph in {0}ms".format(round((perf_counter() - exetime) * 1e3)))
 
 	# Construct pathfinders
 	BFS = Pathfinder(GRAPH, bfs)
 	DIJKSTRA = Pathfinder(GRAPH, dijkstra)
 
 	# Create clustering
-	# clustering(DIJKSTRA, set(id_map.values()), 5)
+	clustering(DIJKSTRA, set(id_map.values()), 5)
