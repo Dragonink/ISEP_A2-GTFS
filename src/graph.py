@@ -85,7 +85,6 @@ class Graph(Generic[T]):
 		"""
 		self.__nodes.append(Node(node))
 
-
 	def add_edge(self, start: int, end: int):
 		"""Add an edge `u-(weight)->v` to the graph
 

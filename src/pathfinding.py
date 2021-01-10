@@ -5,8 +5,8 @@ from heapq import heapify, heappop, heappush
 from graph import Graph
 from timing import timing
 
-T = TypeVar("T")
 
+T = TypeVar("T")
 
 class Pathfinder(Generic[T]):
 	"""Wrapping class to allow pathfinding in graphs
@@ -72,6 +72,17 @@ class Pathfinder(Generic[T]):
 				file.truncate()
 				file.writelines(lines)
 
+	def compute(self, start: int):
+		"""Execute the pathfinding method from a certain node
+
+		Save the newly computed data to the save file
+
+		# Arguments
+		- `start` - Key of the starting node
+		"""
+		if start not in self._previous:
+			self.__method(self, start)
+
 	def has_path(self, start: int, end: int) -> bool:
 		"""Check if a path exist between two nodes
 
@@ -117,7 +128,6 @@ class Pathfinder(Generic[T]):
 				print("Computed in {0}ms".format(round(exetime * 1e3)))
 				#self.compute(start)
 			paths: List[List[int]] = []
-
 			def __recurse(path: List[int], pos: int):
 				if path[pos] == start:
 					paths.append(path[:pos + 1][::-1])
@@ -145,26 +155,7 @@ class Pathfinder(Generic[T]):
 		"""
 		if start not in self._previous:
 			self.compute(start)
-		if start not in self._distance:
-			# Data has been imported, we need to compute distances
-			self._distance[start] = dict()
 
-			def __recurse(_acc: float, node: int) -> float:
-				if node in self._distance[start]:
-					return _acc + self._distance[start][node]
-				elif node in self._previous[start]:
-					previous = list(self._previous[start][node])[0]
-					if self.__method == bfs:
-						return __recurse(_acc + 1, previous)
-					elif self.__method == dijkstra:
-						return __recurse(_acc + self.graph[node].neighbors_in[previous], previous)
-				else:
-					return inf
-
-			for node in self._previous[start]:
-				distance = __recurse(node)
-				if distance < inf:
-					self._distance[start][node] = distance
 		return self._distance[start][end] if end in self._distance[start] else inf
 
 
@@ -185,7 +176,6 @@ def bfs(self: Pathfinder[T], start: int):
 					heappush(queue, u)
 				if self._distance[start][u] == self._distance[start][current] + 1:
 					self._previous[start][u].add(current)
-
 
 def dijkstra(self: Pathfinder[T], start: int):
 	"""Dijkstra method for `Pathfinder`"""
@@ -208,32 +198,3 @@ def dijkstra(self: Pathfinder[T], start: int):
 					self._previous[start][u].add(current)
 				if u not in marked:
 					heappush(queue, (self._distance[start][u], u))
-
-
-"""
-def dijkstra(self: Pathfinder, source: int):
-	#Dijkstra method for `Pathfinder`
-
-	self._previous[source] = dict()
-	self._distance[source] = {source: 0}
-	marked: Set[int] = set()
-	queue = {0: source}
-
-	while len(queue) > 0:
-		current = queue.pop(min(queue))
-
-		if current not in marked:
-			marked.add(current)
-			for (destination, weight) in self.graph[current].neighbors_out:
-				if destination not in marked:
-					self._distance[source]
-					old = self._distance[source][current]
-					new_distance = old + weight
-
-					if destination not in self._distance[source] or \
-						new_distance < self._distance[source][destination]:
-						self._previous[source][destination] = current
-						self._distance[source][destination] = new_distance
-
-						queue[new_distance] = destination
-"""
