@@ -1,9 +1,7 @@
 from typing import Callable, Dict, Generic, List, Set, Tuple, TypeVar
-from os.path import isfile
 from math import inf
 from heapq import heapify, heappop, heappush
 from graph import Graph
-from timing import timing
 
 
 T = TypeVar("T")
@@ -19,58 +17,13 @@ class Pathfinder(Generic[T]):
 	- `previous` - Dictionnary `from => to => previous` where `previous` is a list of the previous nodes of `to` when searching from `from`
 	- `distance` - Dictionnary `from => to => distance`
 	- `method` - Function to compute shortest paths from a node
-	- `save` - Location of the save file
 	"""
 
-	def __init__(self, graph: Graph[T], method: Callable[['Pathfinder[T]', int], None], save: str):
+	def __init__(self, graph: Graph[T], method: Callable[['Pathfinder[T]', int], None]):
 		self.graph = graph
 		self._previous: Dict[int, Dict[int, Set[int]]] = dict()
 		self._distance: Dict[int, Dict[int, float]] = dict()
 		self.__method = method
-		self.__save = save
-		if isfile(self.__save):
-			self.__import()
-		else:
-			# Create save file
-			with open(self.__save, "xt"):
-				pass
-
-	def __import(self):
-		"""Import data from save file"""
-		with open(self.__save, "rt") as file:
-			for i, line in enumerate(file):
-				for node, previous in enumerate(line.strip().split(";")):
-					if len(previous) > 0:
-						if i not in self._previous:
-							self._previous[i] = dict()
-						self._previous[i][node] = set([int(p) for p in previous.split(",")])
-
-	def compute(self, start: int):
-		"""Execute the pathfinding method from a certain node
-
-		Save the newly computed data to the save file
-
-		# Arguments
-		- `start` - Key of the starting node
-		"""
-		if start not in self._previous:
-			self.__method(self, start)
-			# Save newly computed data to save file
-			with open(self.__save, "r+t") as file:
-				lines = file.readlines()
-				while start > len(lines):
-					lines.append("\n")
-				line = ""
-				for node in range(self.graph.order):
-					if node in self._previous[start]:
-						line += ",".join([str(p) for p in self._previous[start][node]])
-					if node < self.graph.order - 1:
-						line += ";"
-				line += "\n"
-				lines.append(line)
-				file.seek(0)
-				file.truncate()
-				file.writelines(lines)
 
 	def compute(self, start: int):
 		"""Execute the pathfinding method from a certain node
@@ -139,6 +92,7 @@ class Pathfinder(Generic[T]):
 							path[pos + 1] = previous
 						__recurse(path, pos + 1)
 
+
 			if self.has_path(start, end):
 				__recurse([end], 0)
 			return paths
@@ -155,6 +109,7 @@ class Pathfinder(Generic[T]):
 		"""
 		if start not in self._previous:
 			self.compute(start)
+
 
 		return self._distance[start][end] if end in self._distance[start] else inf
 
