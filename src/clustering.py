@@ -2,7 +2,7 @@ from pathfinding import Pathfinder
 from timing import timing
 
 
-def clustering(DIJKSTRA: Pathfinder, n):
+def clustering(DIJKSTRA: Pathfinder, nodes, n):
 	"""
 	Clustering method (first try)
 	"""
@@ -10,17 +10,18 @@ def clustering(DIJKSTRA: Pathfinder, n):
 	print("\nCreating", n, "clusters...")
 
 	clusters = []  # Content of the clusters
-	n_nodes = DIJKSTRA.graph.order # Number of nodes
+	n_nodes = len(nodes)  # Number of nodes
+	iteration = 0
 
 	while len(clusters) < n:  # As long as the right number of clusters has not been constituted
 
-		print("\nNew Iteration:")
+		iteration += 1
+		print("\nIteration", iteration)
 
 		edge_betweenness = {}  # Betweenness of each edge
 		DIJKSTRA.reset()
 		nodes_found = set()  # List of discovered nodes
-		new_cluster = False  # Reset the number of clusters
-		nodes_to_explore = list(range(DIJKSTRA.graph.order)) # List of nodes to explore
+		nodes_to_explore = nodes.copy()  # List of nodes to explore
 		progress = 0
 		# clusters = []
 		current_cluster = -1
@@ -34,24 +35,23 @@ def clustering(DIJKSTRA: Pathfinder, n):
 				print(progress, "%", sep='')
 
 			starting_node = nodes_to_explore.pop()  # Take a node to explore
-			#print("Node", starting_node)
 
 
 			# Update the list of clusters
 			if starting_node in nodes_found:  # If the node has already been discovered...
 
 				# Search the node in every cluster list
-				for i in range(len(clusters) - 1):
+				for i in range(len(clusters)):
 					if starting_node in clusters[i]:
 						clusters[i].add(starting_node)
 						current_cluster = i
+
 
 			else:  # If the node hasn't been discovered report the discovery of a new cluster
 
 				clusters.append({starting_node})  # Create a new entry for the new cluster containing its first node
 				current_cluster = len(clusters) - 1
 
-				print("New cluster created, total:", len(clusters))
 
 			nodes_found.add(starting_node)  # Add the node to the discovered nodes list
 
@@ -67,21 +67,26 @@ def clustering(DIJKSTRA: Pathfinder, n):
 					if target_node in nodes_found:  # If the node has already been found
 
 						# Search the node in every cluster list
-						for other_cluster in range(len(clusters) - 1):
+						for other_cluster in range(len(clusters)):
 							if target_node in clusters[other_cluster]:
 
-								clusters[current_cluster].update(clusters[other_cluster])
-								del clusters[other_cluster]
+								if current_cluster == other_cluster:
+									clusters[current_cluster].add(target_node)
+								else:
+									clusters[current_cluster].update(clusters[other_cluster])
+									del clusters[other_cluster]
 
-								# If the deleted cluster was older take into account the shift of values in the list
-								if other_cluster < current_cluster:
-									current_cluster -= 1
+									# If the deleted cluster was older take into account the shift of values in the list
+									if other_cluster < current_cluster:
+										current_cluster -= 1
 
-								print("Sub-cluster deleted, total of clusters:", len(clusters))
+								break
+
 					else:
 						# Set the second node as discovered at add it to the same cluster as the first one
 						nodes_found.add(target_node)
 						clusters[current_cluster].add(target_node)
+
 
 					n_paths = len(paths)  # Number of paths of equal length found
 
@@ -102,17 +107,9 @@ def clustering(DIJKSTRA: Pathfinder, n):
 
 							last_node = previous_node
 
-			if new_cluster:
-				new_cluster = False
-
-		# print("Temp edges betweenness:", edge_betweenness)
 
 		n_clusters = len(clusters)
-		# print("Edges betweenness:", edge_betweenness)
 		print(n_clusters, "clusters found")
-		for i in range(n_clusters):
-			print("Cluster n°", i, " found, size: ", len(clusters[i]), " (", round(100 * len(clusters[i]) / n_nodes),
-				  "%)", sep='')
 
 		# Delete as many edges as there are clusters to create
 		for i in range(n - n_clusters):
@@ -129,7 +126,8 @@ def clustering(DIJKSTRA: Pathfinder, n):
 			A ghost edge will still be listed in neighbors_in but it shouldn't be used by the program
 			"""
 
-	print(n, "clusters obtained:")
-	for i in range(n):
-		print("Cluster n°", i, " found: size (not final): ", len(clusters[i]),
-			  " (", round(100 * len(clusters[i]) / n_nodes), "%)", sep='')
+
+	print("\n", n, "clusters obtained:")
+	for i in range(len(clusters)):
+		print("Cluster n°", i + 1, " found, size: ", len(clusters[i]), " (", round(100 * len(clusters[i]) / n_nodes),
+			  "%) : ", sorted(clusters[i]), sep='')
