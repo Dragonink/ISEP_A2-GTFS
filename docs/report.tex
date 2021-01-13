@@ -88,7 +88,7 @@
 	\and
 	Tanguy \textsc{Berthoud} 60989
 	\and
-	Thibault \textsc{du Buisson de Courson} %TODO
+	Thibault \textsc{de Courson} 10496
 }
 \title{
 	\textbf{PROJECT}\\
@@ -199,7 +199,24 @@
 
 	\section{Finding the shortest paths}\label{sec:step:2}
 
-	%TODO
+	\section{Clustering the graph}\label{sec:step:2}
+
+	Betweenness is a good indicator of clusters. Indeed the edges with the highest betweenness can be seen as the bridges linking the clusters.
+	
+	Thus, destroying a number of these edges can separate these clusters and thus highlight them.
+
+	Thus, the main component of the clustering algorithm is a loop (lines 16 to 128) that, at each iteration, identifies the clusters in the graph, computes the betweenness of each edge, spots the highest ones and deletes them.
+	The loop repeats this operation until the good number of clusters is obtained (usually around 5 to 18 iterations).
+
+	Computing the betweenness:
+	In order to obtain the betweenness of the edges of the graph the algorithm must find every shortest path connecting nodes in the graph.
+	To do so, the algorithm first create an empty list of edges. Then, it use two nested loops. The first one (lines 29 to 109) iterates for every node contained in the graph.
+	Each retreived node is used as the starting point. Having defined it, the algorithm use the second loop (59 to 109) to iterate on every other node contained in the graph.
+	For each of them the algorithm use the Pathfinder to check if a path between the starting node and the target node exists (using get_paths, line 62).
+	If there is one path or more the program iterates on the list of paths (93 to 109). 
+	For each path the algorithm browses the list of nodes and, for each pair of neighboring nodes, computes the name of the edge linking them and increments its betweenness in the list created at the beginning.
+
+	The betweenness of an edge is the number of shortest paths connecting nodes that use this edge. So the main component of the clustering
 
 	\appendix
 	\section{\texttt{gtfs.py}}\label{sec:code:gtfs}

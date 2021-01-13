@@ -127,7 +127,6 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n):
 			"""
 
 
-	print("\n", n, "clusters obtained:")
 	for i in range(len(clusters)):
 		print("Cluster n°", i + 1, " found, size: ", len(clusters[i]), " (", round(100 * len(clusters[i]) / n_nodes),
 			  "%) : ", sorted(clusters[i]), sep='')

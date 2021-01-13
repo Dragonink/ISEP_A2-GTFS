@@ -123,4 +123,4 @@ if __name__ == "__main__":
 	DIJKSTRA = Pathfinder(GRAPH, dijkstra)
 
 	# Create clustering
-	clustering(DIJKSTRA, set(id_map.values()), 11)
+	clustering(DIJKSTRA, set(id_map.values()), 150)
