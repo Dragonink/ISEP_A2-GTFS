@@ -1,33 +1,45 @@
 from pathfinding import Pathfinder
 
-def clustering(DIJKSTRA: Pathfinder, nodes, n, display_all=False):
+def clustering(DIJKSTRA: Pathfinder, nodes, n=2, minimal_size=0, precise=True, chatty=False):
 	"""
-	Clustering method (first try)
+	Clustering algorithm
+
+	# Arguments
+	- `DIJKSTRA` - Graph and Pathfinder used
+	- `nodes` - List of the nodes to explore
+	- `n` - Number of clusters to create
+	- `minimal_size` - Minimal size of the clusters displayed (float value between 0 and 100%)
+	- `precise` - If deactivated the program will be much faster but can also generate a few more clusters than
+				  requested (convenient for quickly creating numerous clusters)
+	- `chatty` - Display or not the execution steps of the algorithm
 	"""
 
 	print("\nCreating", n, "clusters...")
 	clusters = []  # Content of the clusters
 	n_nodes = len(nodes)  # Number of nodes
 	iteration = 0
+	n_removals = 1
 
 	while len(clusters) < n:  # As long as the right number of clusters has not been constituted
-		iteration += 1
-		print("\nIteration", iteration)
+		if chatty:
+			iteration += 1
+			print("\nIteration", iteration)
 		edge_betweenness = {}  # Betweenness of each edge
-		DIJKSTRA.reset()
+		DIJKSTRA.reset()  # Reset the Dijkstra algorithm
 		nodes_found = set()  # List of discovered nodes
 		nodes_to_explore = nodes.copy()  # List of nodes to explore
 		progress = 0
-		clusters = []
-		current_cluster = -1
+		clusters = []  # List of clusters and their content
+		current_cluster = -1  # Cluster being explored
 
 		while nodes_to_explore:  # As long as there is still unexplored nodes
 
 			# Displaying the progress
-			new_progress = int(round(100 * (1 - len(nodes_to_explore) / n_nodes), -1))
-			if new_progress > progress:
-				progress = new_progress
-				print(progress, "%", sep='')
+			if chatty:
+				new_progress = int(round(100 * (1 - len(nodes_to_explore) / n_nodes), -1))
+				if new_progress > progress:
+					progress = new_progress
+					print(progress, "%", sep='')
 
 			starting_node = nodes_to_explore.pop()  # Take a node to explore
 
@@ -94,16 +106,20 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n, display_all=False):
 							last_node = previous_node
 
 		n_clusters = len(clusters)  # Count the number of clusters
-		print(n_clusters, "clusters found")
+		if chatty:
+			print(n_clusters, "clusters found")
 
-		# Delete as many edges as there are clusters to create
-		for i in range(n - n_clusters):
+		if not precise:
+			n_removals = n - n_clusters  # Delete as many edges as there are clusters to create
+
+		for i in range(n_removals):
 
 			# Get the edge with the highest betweenness
 			highest_betweenness = max(edge_betweenness, key=edge_betweenness.get)
 
-			print("Deleting the edge between ", highest_betweenness[0], " and ", highest_betweenness[1],
-				  " (Betweenness: ", edge_betweenness[highest_betweenness], ")", sep='')
+			if chatty:
+				print("Deleting the edge between ", highest_betweenness[0], " and ", highest_betweenness[1],
+					  " (Betweenness: ", edge_betweenness[highest_betweenness], ")", sep='')
 
 			del edge_betweenness[highest_betweenness]  # Delete it from the list of edges betweenness
 
@@ -115,8 +131,14 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n, display_all=False):
 			"""
 
 	# Displaying the clusters created
+	crumbs=0
 	for i in range(len(clusters)):
 		size = len(clusters[i])
-		if size > 1 or display_all:
-			print("Cluster ", i + 1, ": size: ", size, " (", round(100 * len(clusters[i]) / n_nodes), "%), content: ",
+		size_percentage = 100 * len(clusters[i]) / n_nodes
+		if size_percentage > minimal_size:
+			print("Cluster ", i + 1, ": size: ", size, " (", round(size_percentage), "%), content: ",
 				  sorted(clusters[i]), sep='')
+		else:
+			crumbs += size
+	if minimal_size > 0:
+		print("Nodes isolated in small clusters: ", crumbs, " (", round(100 * crumbs / n_nodes), "%)", sep='')

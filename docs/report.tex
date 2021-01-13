@@ -249,39 +249,63 @@
 
 	\section{Clustering the graph}\label{sec:step:2}
 
-	Betweenness is a good indicator of clusters.
+	The clustering function take six parameters : DIJKSTRA contains the graph and Pathfinder used, nodes the list of the
+	nodes to explore, n the number of clusters to create, minimal_size the minimal size of the clusters displayed
+	(float value between 0 and 100%), precise is an option that, if deactivated, will make the algorithm much faster but
+	which can also generate a few more clusters than requested (convenient for quickly creating numerous clusters) and,
+	finally, chatty is an option that, if activated, will display the algorithm execution steps
+
+
+	To create the clusters this algorithm use the betweenness of the edges.
 	Indeed, the edges with the highest betweenness can be seen as the bridges linking the clusters.
 	Thus, destroying a number of these edges can separate these clusters, highlighting them.
+	The clustering algorithm contains many function and two main ones can be isolated: the betweenness calculation and
+	the clusters identification. Thus, they are explained first.
 
-	Thus, the main component of the clustering algorithm is a loop (lines 13 to 117) that, at each iteration,
-	identifies the clusters in the graph, computes the betweenness of each edge, spots the highest ones and deletes them.
-	The loop repeats that operation until the good number of clusters is obtained (usually 5 to 15 iterations).
 
-	Computing the betweenness:
+	Betweenness calculation:
 	The betweenness of an edge is the number of shortest paths connecting nodes that use this edge.
 	So, in order to obtain it, the algorithm must find every shortest path connecting nodes in the graph.
 	To do so, the algorithm first create an empty betweenness list. Then, it use two nested loops:
-	The first one (lines 24 to 96) iterates for every node contained in the graph.
+	The first one (lines 35 to 107) iterates for every node contained in the graph.
 	Each retreived node is used as a starting point.
-	Then, the algorithm use the second loop (49 to 96) to iterate on every other node contained in the graph.
-	At each iteration the algorithm use the Pathfinder to check if there is a path between the starting and target nodes.
-	(using get_paths, line 52).
-	If there is at least one path, the program iterates on the list of paths retreived (81 to 96).
-	For each path the algorithm browses the list of nodes and, for each pair of neighboring nodes, computes the name of
+	Then, the algorithm use the second loop (61 to 107) to iterate on every other node contained in the graph.
+	At each iteration the algorithm use the Pathfinder to check if there is a path between the starting and target nodes
+	(using get_paths, line 64).
+	If there is at least one path, the program iterates on the list of paths retreived (93 to 107).
+	For each path the algorithm browses the list of nodes and, for each pair of neighbors, computes the name of
 	the edge linking them and increments its betweenness in the betweenness list.
 
-	Identify clusters:
-	A cluster is a list of linked nodes. Identifying them can be done during the computing of the betweenness.
+	At the end of the execution of this algorithm the betweenness list contains the current betweenness of each node of
+	the graph.
+
+
+	Clusters identification:
+	A cluster is a list of linked nodes. Identifying them is done during the calculation of the betweenness.
+	First the algorithm create a list containing each cluster and its content (line 31)
 
 	Each time a starting node is chosen the algorithm checks if it has already been used as a target node.
-	If it has not a potential new cluster has been found, a new cluster list is created (43 to 47)
-	If it has the algorithm search the number of the cluster in which the node is (34 to 41)
+	If it has not a potential new cluster has been found, a new cluster list is created (54 to 58)
+	If it has the algorithm search the number of the cluster in which the node is (50 to 53)
 	In both cases the algorithm saves the number of the cluster in which is the starting node.
 
 	Each time a linked node is found the algorithm can therefore determine that it is in the same cluster as the first.
 	Before doing so the algorithm checks if the node has already been found.
-	If it has it is the sign that a connected cluster has been found, it is merged into the current one (57 to 72)
-	If it has not the target node is added to the cluster being explored (73 to 78)
+	If it has it is the sign that a connected cluster has been found, it is merged into the current one (69 to 84)
+	If it has not the target node is added to the cluster being explored (85 to 90)
+
+	At the end of the execution of the betweenness program the list of clusters is completed.
+
+
+	Clustering:
+	The main component of the clustering algorithm is a loop (lines 23 to 132) that, at each iteration:
+	- computes the betweenness of each edge (using the betweenness algorithm),
+	- identifies the clusters in the graph (using the cluster identification algorithm)
+	- delete the edge with the highest betweenness
+	The loop repeats that operation until the good number of clusters is obtained
+	(up to 15 iterations with the quick option and to 100+ with the precise option).
+
+
 
 
 	\appendix
