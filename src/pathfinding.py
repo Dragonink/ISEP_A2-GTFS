@@ -2,12 +2,8 @@ from typing import Callable, Dict, Generic, List, Set, Tuple, TypeVar
 from math import inf
 from heapq import heapify, heappop, heappush
 from graph import Graph
-from timing import timing
-
 
 T = TypeVar("T")
-
-
 class Pathfinder(Generic[T]):
 	"""Wrapping class to allow pathfinding in graphs
 
@@ -20,19 +16,14 @@ class Pathfinder(Generic[T]):
 	- `distance` - Dictionnary `from => to => distance`
 	- `method` - Function to compute shortest paths from a node
 	"""
-
 	def __init__(self, graph: Graph[T], method: Callable[['Pathfinder[T]', int], None]):
 		self.graph = graph
-		self._distance: Dict[int, Dict[int, float]] = dict()
 		self._previous: Dict[int, Dict[int, Set[int]]] = dict()
+		self._distance: Dict[int, Dict[int, float]] = dict()
 		self.__method = method
-
-
 	def reset(self):
-		self._distance = dict()
-		self._previous = dict()
-
-
+		"""Reset the pathfinding results"""
+		Pathfinder.__init__(self, self.graph, self.__method)
 	def compute(self, start: int):
 		"""Execute the pathfinding method from a certain node
 
@@ -43,7 +34,6 @@ class Pathfinder(Generic[T]):
 		"""
 		if start not in self._previous:
 			self.__method(self, start)
-
 	def has_path(self, start: int, end: int) -> bool:
 		"""Check if a path exist between two nodes
 
@@ -61,12 +51,8 @@ class Pathfinder(Generic[T]):
 			raise ValueError("start={0} and end={0} are equal".format(start, end))
 		else:
 			if start not in self._previous:
-				#print("Dijkstra launched...")
-				#(), exetime = timing(self.compute)(start)
-				#print("Dijkstra of {0} in {1}ms".format(start, round(exetime * 1e3)))
 				self.compute(start)
 			return end in self._previous[start]
-
 	def get_paths(self, start: int, end: int) -> List[List[int]]:
 		"""Get the shortest path between two nodes
 
@@ -84,9 +70,6 @@ class Pathfinder(Generic[T]):
 			raise ValueError("start={0} and end={0} are equal".format(start, end))
 		else:
 			if start not in self._previous:
-				#print("Dijkstra of", start, "launched...")
-				#(_), exetime = timing(self.compute)(start)
-				#print("Computed in {0}ms".format(round(exetime * 1e3)))
 				self.compute(start)
 			paths: List[List[int]] = []
 			def __recurse(path: List[int], pos: int):
@@ -99,12 +82,9 @@ class Pathfinder(Generic[T]):
 						else:
 							path[pos + 1] = previous
 						__recurse(path, pos + 1)
-
-
 			if self.has_path(start, end):
 				__recurse([end], 0)
 			return paths
-
 	def get_distance(self, start: int, end: int) -> float:
 		"""Get the distance between two nodes
 
@@ -117,10 +97,7 @@ class Pathfinder(Generic[T]):
 		"""
 		if start not in self._previous:
 			self.compute(start)
-
-
 		return self._distance[start][end] if end in self._distance[start] else inf
-
 
 def bfs(self: Pathfinder[T], start: int):
 	"""Breadth-First Search method for `Pathfinder`"""
@@ -139,7 +116,6 @@ def bfs(self: Pathfinder[T], start: int):
 					heappush(queue, u)
 				if self._distance[start][u] == self._distance[start][current] + 1:
 					self._previous[start][u].add(current)
-
 def dijkstra(self: Pathfinder[T], start: int):
 	"""Dijkstra method for `Pathfinder`"""
 	if start not in self._previous:
@@ -161,6 +137,3 @@ def dijkstra(self: Pathfinder[T], start: int):
 					self._previous[start][u].add(current)
 				if u not in marked:
 					heappush(queue, (self._distance[start][u], u))
-
-
-

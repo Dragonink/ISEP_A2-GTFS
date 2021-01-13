@@ -1,6 +1,12 @@
 ## Python
 __pycache__/
 ## Miscellaneous
+*.aux
+*.toc
+*.lof
+*.lot
+*.out
+*.log
 *.pdf
 !docs/*.pdf
 

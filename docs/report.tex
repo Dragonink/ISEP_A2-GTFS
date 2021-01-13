@@ -34,7 +34,7 @@
 }
 
 \makeatletter
-	\renewcommand*\and{\newline}
+	\renewcommand*\and\\
 	\let\old@itemize\itemize%
 	\renewcommand\itemize{
 		\parskip=0pt
@@ -84,11 +84,11 @@
 \makeatother
 
 \author{
-	Cyprien \textsc{Bariant} %TODO
+	Cyprien \textsc{Bariant} \texttt{10558}
 	\and
-	Tanguy \textsc{Berthoud} 60989
+	Tanguy \textsc{Berthoud} \texttt{60989}
 	\and
-	Thibault \textsc{de Courson} 10496
+	Thibault \textsc{du Buisson de Courson} \texttt{10496}
 }
 \title{
 	\textbf{PROJECT}\\
@@ -135,7 +135,7 @@
 	\end{center}
 
 	The nodes of the graph are directly given by the file \texttt{stops.txt}, so we can just parse the file to import them.
-	This is done in the \texttt{import\_nodes} function of \hyperref[sec:code:gtfs]{\ttfamily gtfs.py}.
+	This is done in the \texttt{import\_stops} function of \hyperref[sec:code:gtfs]{\ttfamily gtfs.py}.
 
 	Whereas the edges need some operations:
 	\begin{enumerate}
@@ -149,35 +149,35 @@
 
 	The \texttt{Graph} class is in \hyperref[sec:code:graph]{\ttfamily graph.py}.
 
-	The class supports weighted directed graphs, but unweighted or undirected graphs can also be created.\\
+	The class supports weighted directed graphs, but unweighted graphs can also be created.\\
 	The class constructor accepts an optional parameter which is a callback to compute weight from two given nodes.
 	In our case, this function takes two \texttt{Stop} (defined in \hyperref[sec:code:gtfs]{\ttfamily gtfs.py}) instances and returns the Euclidian distance between them: \[
 		\text{compute\_weight}: (s,s') \mapsto \sqrt{\left(s'_\text{lat} - s_\text{lat}\right)^2 + \left(s'_\text{lon} - s_\text{lon}\right)^2}
 	\]
-	If this parameter is not passed, all edge weights will be set to \(0\).\\
-	The support for directions comes from the \texttt{neighbors\_in} and \texttt{neighbors\_out} methods.
-	The method \texttt{neighbors} can be used instead for undirected graphs.
+	If this parameter is not passed, all edge weights will be set to \(0\).
 
-	After testing the pathfinding methods (see \autoref{sec:step:2}), we realized that our way of storing neighbors was not optimized.\\
+	After testing the pathfinding methods (see \autoref{sec:step:2.2}), we realized that our way of storing neighbors was not optimized.\\
 	Indeed we stored the neighbors in a huge adjacency list.
 	So when we needed to compute some neighbors, we had to search in the whole list for neighbors.\\
 	So we optimized this aspect.
 	We are now storing the neighbors of a node inside the \texttt{Node} object itself.
-	This implementation has redundancy in memory, but fetching the neighbors of a node is now \(\mathcal{O}(1)\) for the \texttt{neighbors\_out} and \texttt{neighbors\_in} methods, but not for \texttt{neighbors} since it computes the union of two sets.
+	This implementation has redundancy in memory, but fetching the neighbors of a node is now \(\mathcal{O}(1)\) for the \texttt{neighbors\_out} and \texttt{neighbors\_in} methods.
+
+	But our graph was just too big at that time to be able to work efficiently on it.\\
+	So we restricted the graph to a district of the city, so the graph's order and size have been divided by 8.
 
 	\subsection{Results}\label{sec:results:1}
 
 	\begin{itemize}
-		\item \(7982\) lines from \texttt{stops.txt} were imported to \(7982\) nodes in the graph.
-		\item \(1720661\) lines from \texttt{stop\_times.txt} were imported to \(8462\) edges in the graph.\\
-		This is not surprising, because one line is used for a single stop in a single trip at certain hours: there are a lot of redundancies.
+		\item \(7982\) lines from \texttt{stops.txt} were imported to \(891\) nodes (\(7863\) before restricting the graph) in the graph.
+		\item \(1720661\) lines from \texttt{stop\_times.txt} were imported to \(975\) edges (\(8319\) before the restriction) in the graph.
 	\end{itemize}
 
 	\begin{center}
 		\begin{tabular}{r c c c}
 			& \textbf{\ttfamily import\_stops} & \textbf{\ttfamily import\_edges} & \textbf{\ttfamily Graph}\\
 			\hline\hline
-			Before neighbors optimization & \num{38.61} & \num{4211.02} & \num{78.64}\\
+			Before optimizations & \num{38.61} & \num{4211.02} & \num{78.64}\\
 			& \num{31.75} & \num{5036.29} & \num{49.05}\\
 			& \num{44.50} & \num{5085.64} & \num{68.83}\\
 			& \num{28.56} & \num{3786.03} & \num{43.43}\\
@@ -192,17 +192,65 @@
 		\captionof{table}{Execution time (\si{\milli\second}) for the graph creation over several tries}
 		\label{tab:exectime:graph}
 	\end{center}
-	We see in this \autoref{tab:exectime:graph} that after the optimization described in \autoref{sec:step:1.2}, the execution time for the \texttt{Graph} instanciation has increased from an average of \SI{56.71}{\milli\second} to \SI{102.77}{\milli\second}.
+	We see in this \autoref{tab:exectime:graph} that after the neighbors optimization described in \autoref{sec:step:1.2}, the execution time for the \texttt{Graph} instanciation has increased from an average of \SI{56.71}{\milli\second} to \SI{102.77}{\milli\second}.
 	This can be explained by the new storage method of neighbors: we need to add two different tuples into two different sets.
 
-	%TODO visual graph ?
-
 	\section{Finding the shortest paths}\label{sec:step:2}
+	\subsection{Common interface}\label{sec:step:2.1}
+
+	To ease the usage of pathfinding for future computations, we created a common interface which is the \texttt{Pathfinder} class of \hyperref[sec:code:pathfinding]{\ttfamily pathfinding.py}.
+
+	We used the \emph{Strategy design pattern} here with the \texttt{method} property, which is assigned in the class constructor to a function with the following signature: \[
+		\text{method}: (\text{pathfinder}: \text{Pathfinder}, \text{start}: \text{int}) \rightarrow \text{None}
+	\]
+	This function is to compute all shortest paths from \texttt{start} and store them in \texttt{pathfinder}, using its \texttt{previous} and \texttt{distance} dictionnaries.
+
+	\subsection{Pathfinding methods}\label{sec:step:2.2}
+
+	We implemented two methods for the \hyperref[sec:step:2.1]{common interface}: \texttt{bfs} and \texttt{dijkstra}, defined in \hyperref[sec:code:pathfinding]{\ttfamily pathfinding.py}.
+
+	Both use a queue to define the next nodes to be traversed, and proceed until this queue is empty.\\
+	For \texttt{dijkstra}, this queue is actually a priority queue, sorted by ascending distance to \texttt{start}.
+
+	For each outward neighbor \(n\) of the current traversed node \(c\), we initialize the relevant sections of \texttt{pathfinder} if needed, and we update them with the current neighbor traversed:
+	\begin{itemize}
+		\item[\texttt{bfs}] if \(d(\text{start},n) = d(\text{start},c) + 1\), then we add \(c\) to the backtrack list of \(n\).
+		\item[\texttt{dijkstra}] if \(d(\text{start},n) \le d(\text{start},c) + w\) with \(w\) the weight of the edge \((c,n)\), then we add \(c\) to the backtrack list of \(n\). And if \(d(\text{start},n) < d(\text{start},c) + w\), then we reset the backtrack list and distance.
+	\end{itemize}
+
+	To optimize these methods, at the time when our graph was not restricted, we replaced the queues (which were simple lists) by heap queues using the \href{https://docs.python.org/3/library/heapq.html}{\ttfamily heapq} module of Python.\\
+	This also improved the correctness of our methods, since it allows to pop nodes from the queue in a consistent order.
+
+	\subsection{Results}\label{sec:results:2}
+
+	\begin{center}
+		\begin{tabular}{r c c}
+			& \textbf{\ttfamily bfs} & \textbf{\ttfamily dijkstra}\\
+			\hline\hline
+			Before optimizations & \num{1.54} & \num{2.05}\\
+			& \num{1.48} & \num{2.26}\\
+			& \num{2.72} & \num{3.51}\\
+			& \num{2.37} & \num{2.88}\\
+			& \num{2.15} & \num{2.33}\\
+			\hline
+			After heaps optimization & \num{1.92} & \num{4.09}\\
+			& \num{3.06} & \num{5.40}\\
+			& \num{2.97} & \num{5.77}\\
+			& \num{3.36} & \num{8.08}\\
+			& \num{2.71} & \num{4.38}\\
+		\end{tabular}
+		\captionof{table}{Execution time (\si{\milli\second}) for the pathfinding methods over several tries}
+		\label{tab:exectime:pathfinding}
+	\end{center}
+	We see in this \autoref{tab:exectime:pathfinding} that after the heaps optimization, the execution times have increased from an average of \SI{2.05}{\milli\second} to \SI{2.80}{\milli\second} for \texttt{bfs} and from \SI{2.61}{\milli\second} to \SI{5.54}{\milli\second} for \texttt{dijkstra}.
+	Even though this optimization helped a lot when our graph was not restricted to a single district, it seems that using heap queues for little graphs does not help.
+
+	\section{Finding clusters}\label{sec:step:3}
 
 	\section{Clustering the graph}\label{sec:step:2}
 
 	Betweenness is a good indicator of clusters. Indeed the edges with the highest betweenness can be seen as the bridges linking the clusters.
-	
+
 	Thus, destroying a number of these edges can separate these clusters and thus highlight them.
 
 	Thus, the main component of the clustering algorithm is a loop (lines 16 to 128) that, at each iteration, identifies the clusters in the graph, computes the betweenness of each edge, spots the highest ones and deletes them.
@@ -213,18 +261,25 @@
 	To do so, the algorithm first create an empty list of edges. Then, it use two nested loops. The first one (lines 29 to 109) iterates for every node contained in the graph.
 	Each retreived node is used as the starting point. Having defined it, the algorithm use the second loop (59 to 109) to iterate on every other node contained in the graph.
 	For each of them the algorithm use the Pathfinder to check if a path between the starting node and the target node exists (using get_paths, line 62).
-	If there is one path or more the program iterates on the list of paths (93 to 109). 
+	If there is one path or more the program iterates on the list of paths (93 to 109).
 	For each path the algorithm browses the list of nodes and, for each pair of neighboring nodes, computes the name of the edge linking them and increments its betweenness in the list created at the beginning.
 
 	The betweenness of an edge is the number of shortest paths connecting nodes that use this edge. So the main component of the clustering
 
 	\appendix
+
+	This program is meant to be run by invoking Python on the \hyperref[sec:code:gtfs]{\ttfamily gtfs.py} script and adding the path to the GTFS data as argument.\\
+	For example, you may execute \texttt{python src/gtfs.py ./data/} from the workspace root.
+
 	\section{\texttt{gtfs.py}}\label{sec:code:gtfs}
-	\lstinputlisting{src/gtfs.py}
+	\lstinputlisting{../src/gtfs.py}
 
 	\section{\texttt{graph.py}}\label{sec:code:graph}
-	\lstinputlisting{src/graph.py}
+	\lstinputlisting{../src/graph.py}
 
 	\section{\texttt{pathfinding.py}}\label{sec:code:pathfinding}
-	\lstinputlisting{src/pathfinding.py}
+	\lstinputlisting{../src/pathfinding.py}
+
+	\section{\texttt{clustering.py}}\label{sec:code:clustering}
+	\lstinputlisting{../src/clustering.py}
 \end{document}
