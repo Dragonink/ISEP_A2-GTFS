@@ -89,7 +89,7 @@ if __name__ == "__main__":
 	For example, if you execute Python from the workspace root, you can enter: `python src/gtfs.py ./data/`.
 	Or, if you execute Python from the `src/` directory: `python gtfs.py ../data/`.
 	"""
-	DATAPATH = argv[1] if len(argv) > 1 else getcwd()
+	DATAPATH = argv[1] if len(argv) > 1 else "../data/"
 	# Import data
 	(stops, id_map), exetime = timing(import_stops)(join(DATAPATH, "stops.txt"))
 	print("Imported {0} stops in {1}ms".format(len(stops), exetime * 1e3))
@@ -106,4 +106,4 @@ if __name__ == "__main__":
 	BFS = Pathfinder(GRAPH, bfs)
 	DIJKSTRA = Pathfinder(GRAPH, dijkstra)
 	# Create clustering
-	clustering(DIJKSTRA, set(id_map.values()), 11)
+	clustering(DIJKSTRA, set(id_map.values()), 147)
