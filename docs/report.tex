@@ -288,6 +288,14 @@
 
 	\subsection{Results}\label{sec:results:3}
 
+	Our clustering algorithm completes in an average of \SI{24.189}{\second}.\\
+	And for the number of clusters found, our algorithm breaks down the huge central cluster from a number of requested clusters of 147.
+	Below, it only finds tiny clusters.
+
+	These clusters are densely connected subgraphs.
+	This means that these clusters are zones in which one can easily navigate from one point to another.
+	Or alternatively, this means that the edges kept in clusters are the least used, since the edges crossed by the highest numbers of shortest paths are removed.
+
 	\appendix
 
 	This program is meant to be run by invoking Python on the \hyperref[sec:code:gtfs]{\ttfamily gtfs.py} script and adding the path to the GTFS data as argument.\\
