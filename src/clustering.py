@@ -1,6 +1,6 @@
 from pathfinding import Pathfinder
 
-def clustering(DIJKSTRA: Pathfinder, nodes, n):
+def clustering(DIJKSTRA: Pathfinder, nodes, n, display_all=False):
 	"""
 	Clustering method (first try)
 	"""
@@ -37,7 +37,6 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n):
 				# Search the node in every cluster list
 				for i in range(len(clusters)):
 					if starting_node in clusters[i]:
-						clusters[i].add(starting_node)
 						current_cluster = i
 
 			else:  # If the node hasn't been discovered report the discovery of a new cluster
@@ -117,5 +116,7 @@ def clustering(DIJKSTRA: Pathfinder, nodes, n):
 
 	# Displaying the clusters created
 	for i in range(len(clusters)):
-		print("Cluster ", i + 1, " found, size: ", len(clusters[i]), " (", round(100 * len(clusters[i]) / n_nodes),
-			  "%) : ", sorted(clusters[i]), sep='')
+		size = len(clusters[i])
+		if size > 1 or display_all:
+			print("Cluster ", i + 1, ": size: ", size, " (", round(100 * len(clusters[i]) / n_nodes), "%), content: ",
+				  sorted(clusters[i]), sep='')
